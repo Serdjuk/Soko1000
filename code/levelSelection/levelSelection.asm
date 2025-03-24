@@ -20,9 +20,7 @@ init:
 	ei
 	halt
 
-	call	move_level_cursor
-	call	draw_cursor
-
+	call	move
 	jr	.loop
 
 draw_cursor:
@@ -50,14 +48,55 @@ draw_cursor:
 	call	RENDER.paint_paper_level_cursor
 	ret
 
+input:
+	call	INPUT.keyListener
+	cp	SPACE
+	jr	z,.swap_selection
+	cp	ENTER
+	ret	nz
+					; start level
+	
 
-select_world:
+	ret	
+.swap_selection:
+	ld	a,(DATA.is_world_selection_active)
+	xor	1
+	ld	(DATA.is_world_selection_active),a
 	ret
-select_level:
-	ret
+
+move:
+	ld	a,(DATA.is_world_selection_active)
+	or	a
+	jr	z,move_world_cursor
+	jr	move_level_cursor
 
 move_world_cursor:
+	call	INPUT.keyListener
+	ld	hl,VAR.key_binding + 2
+	cp	(hl)
+	inc	hl
+	jr	z,.left
+	cp	(hl)
+	inc	hl
+	jr	z,.right
 	ret
+.right:
+	ld	a,(DATA.world_index)
+	inc	a
+	cp	MAX_WORLDS
+	jr	c,.set_new_index
+	xor	a
+.set_new_index:
+	ld	(DATA.world_index),a
+	ret
+.left:
+	ld	a,(DATA.world_index)
+	sub	1
+	jr	nc,.set_new_index
+	ld	a,MAX_WORLDS - 1
+	jr	.set_new_index
+
+
 move_level_cursor:
 	call	INPUT.keyListener
 	ld	hl,VAR.key_binding
