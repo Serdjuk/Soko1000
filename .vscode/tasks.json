@@ -1,0 +1,39 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "sjasmplus",
+            "type": "shell",
+            "command": "./sjasmplus/sjasmplus",
+            "args": [
+                "code/main.asm",
+                "--nofakes"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "C:/ZX/emul/Xpeccy0.6.20231026/xpeccy.exe",
+            "args": [
+                "-l",
+                "labList/user.l",
+                "build/Soko1000.tap"
+            ],
+            "dependsOn": "sjasmplus",
+            "problemMatcher": [
+                "$problem-matcher-sjasmplus"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+
+}

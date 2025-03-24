@@ -1,0 +1,2 @@
+MAX_WORLDS:				equ	10
+MAX_LEVELS:				equ	100
