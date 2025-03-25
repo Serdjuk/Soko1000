@@ -1,5 +1,4 @@
-	module	LEVEL
-MAX_LEVEL_SIZE				equ #10
+	module	LEVEL_INFO_PANEL
 ; + 
 init:
 	ld	hl,DATA.LEVEL.cells
@@ -48,11 +47,15 @@ init:
 	call	draw_one_digit
 
 	ld	a,(DATA.world_index)
+	inc	a
 	ld	de,#405E
 	call	draw_one_digit
 
 
-	ld	hl,(DATA.level_index)
+	ld	a,(DATA.level_index)
+	inc	a
+	ld	l,a
+	ld	h,0
 	ld	de,DATA.digital_value_buffer
 	push	de
 	call	UTILS.num2dec.hundredths

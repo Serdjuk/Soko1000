@@ -13,8 +13,15 @@ code: 	; 23774
 	LOAD_TAPE #4000, #1B00
 	LOAD_TAPE endB, prog_end - prog_start
 	call	RENDER.clear_screen
+	xor	a
+	out	(#FE),a
 	ld	sp,endB
-	jp	GAME.init
+
+
+	ld	hl,LEVEL_SELECTION.init
+	jp	loop
+	; include	"../loop.asm"
+	; jp	LEVEL_SELECTION.init
 
 vars:
         db 	#0D

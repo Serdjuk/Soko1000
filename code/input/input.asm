@@ -61,5 +61,5 @@ rows:
 	db "09876"
 	db "POIUY"
 	db "{LKJH"
-	db "^`MNB"
+	db " `MNB"
 	endmodule

@@ -16,16 +16,19 @@
 prog_start:
 		TAPOUT 		build/Soko1000.tap
 
+
+		include	"loop.asm"
 		include	"render/render.asm"
 		include "graphics/sprites.asm"
 		include	"game/game.asm"
-		include	"game/level/level.asm"
 		include	"input/input.asm"
 		include	"utils.asm"
 		include	"converter/converter.asm"
 		include	"packedLevels.asm"
 		include	"mainMenu/mainMenu.asm"
+		include	"levelInfoPanel.asm"
 		include	"levelSelection/levelSelection.asm"
+		include "levelInfoScreen.asm"
 		include	"vars.asm"
 		include	"text.asm"
 
@@ -40,5 +43,8 @@ prog_end:
 
 		display "LAST BYTE ADDR: ",/A, prog_end
 		display "FREE: ",/A, #FFFF - $
+
+		display "crates addr: ",/A, DATA.LEVEL.cratesObjects
+		display "containers addr: ",/A, DATA.LEVEL.containersObjects
 
 	endif

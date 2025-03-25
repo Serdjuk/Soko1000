@@ -1,5 +1,13 @@
 	module UTILS
-	
+
+; + if z != 0 {pressed}
+wait_any_key:
+        xor a
+        in a,(#fe)
+        cpl
+        and #1f
+        ; jr z,$-6
+        ret
 
 ; + DE - positions address (X,Y).
 ; + return: HL - screen address for draw.
@@ -31,8 +39,6 @@ get_screen_addr:
 	inc	de
 	pop	af
 	ret
-
-
 ;	http://z80-heaven.wikidot.com/math#toc10
 ;Inputs:
 ;     	DE and A are factors
@@ -189,6 +195,28 @@ map_addr:
 	ld	d,0
 	ld	hl,DATA.LEVEL.cells
 	add	hl,de
+	ret
+
+; + A - position X
+copy_player_sprite_to_buffer:
+	ld	de,DATA.player_sprite_buffer
+	ld	hl,SPRITE.player_left
+	rrca
+	jr	nc,.loop - 2
+	ld	bc,32
+	add	hl,bc
+	ld	b,12
+.loop:
+	ld	a,(hl)
+	ld	(de),a
+	inc	hl
+	inc	de
+	ld	a,(hl)
+	ld	(de),a
+	inc	hl
+	inc	de
+	inc	de
+	djnz	.loop
 	ret
 
 pack_progress_for_save:

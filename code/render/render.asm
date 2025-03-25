@@ -52,6 +52,62 @@ clear_paper_level_cursor:
 	inc	l
 	djnz	clear_paper_level_cursor
 	ret
+; + A - to color
+fade_in:
+	ld	e,a
+	ei	
+	halt
+	ld	hl,$5800
+	ld	bc,#0300
+.loop:
+	ld	(hl),e
+	inc	hl
+	dec	bc
+	ld	a,c
+	or	b
+	jr	nz,.loop
+	inc	e
+	bit	3,e
+	jr	z,fade_in + 1
+	ret
+
+fade_out:
+	ld	a,8
+	ei
+	halt
+	ld	hl,#5800
+	ld	bc,#0300
+	exa
+.loop:
+	ld	a,(hl)
+	and	%00111000
+	sub	1
+	jr	nc,.l1
+	xor	a
+.l1:
+	ld	e,a
+	ld	a,(hl)
+	and	%00000111
+	sub	1
+	jr	nc,.l2
+	xor	a
+.l2:
+	ld	d,a
+	ld	a,(hl)
+	and	%11000000
+	or	d
+	or	e
+	ld	(hl),a
+	inc	hl
+	dec	bc
+	ld	a,c
+	or	b
+	jr	nz,.loop
+	exa
+	dec	a
+	ret	z
+	jr	fade_out + 2
+
 ; + HL - word address
 ; + DE - screen address
 draw_word:
@@ -84,7 +140,7 @@ draw_char:
 ; + DRAW LEVEL with all objects !!!
 draw_level:
 	ld	hl,#4000
-	ld	bc,LEVEL.MAX_LEVEL_SIZE + LEVEL.MAX_LEVEL_SIZE * 256
+	ld	bc,MAX_LEVEL_SIZE + MAX_LEVEL_SIZE * 256
 	
 
 	ld	ix,DATA.LEVEL.cells

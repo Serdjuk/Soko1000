@@ -1,3 +1,13 @@
+	struct	OBJECT
+type:		byte
+x:		byte
+y:		byte
+pre_x:		byte
+pre_y:		byte
+	ends
+
+
+
 LOOP:	macro	adr
 	ld	hl,adr
 	ret	

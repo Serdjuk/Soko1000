@@ -2,28 +2,12 @@
 
 init:
 
+	; ld      d,0 or (7 << 3)
+	; call	RENDER.grid
+	call	LEVEL_INFO_PANEL.init
+	ld	a,6
+	call	RENDER.fade_in
 
-	call	LEVEL_SELECTION.init
-	
-
-
-
-
-
-
-
-
-
-
-	
-	ld      d,0 or (7 << 3)
-	call	RENDER.grid
-
-	call	LEVEL.init
-
-
-	ld	hl,start
-	include	"../loop.asm"
 start:
 	call	GAME.update
 
@@ -33,16 +17,13 @@ update:
 
 	call	input
 	call	move
-
 	call	set_pre_positions
-
 	call	is_level_completed
 	xor	a
 	or	b
 	ret	nz
 	ld	a,2
 	out	(254),a
-
 	ret
 
 set_pre_positions:

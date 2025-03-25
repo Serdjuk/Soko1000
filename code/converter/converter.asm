@@ -38,7 +38,7 @@ depack:
 	push	hl
 	call	depack_level_rows
 	pop	hl
-	ld	bc,LEVEL.MAX_LEVEL_SIZE
+	ld	bc,MAX_LEVEL_SIZE
 	add	hl,bc
 	pop	bc
 	djnz	.loop
@@ -149,12 +149,12 @@ calc_level_offset:
 					; TODO - полученное смещение округлять в большую сторону.
 	ld	a,(DATA.LEVEL.width)
 	neg
-	add	LEVEL.MAX_LEVEL_SIZE
+	add	MAX_LEVEL_SIZE
 	sra	a				
 	ld	(DATA.LEVEL.offsetX),a
 	ld	a,(DATA.LEVEL.height)
 	neg
-	add	LEVEL.MAX_LEVEL_SIZE
+	add	MAX_LEVEL_SIZE
 	sra	a				
 	ld	(DATA.LEVEL.offsetY),a
 	ret

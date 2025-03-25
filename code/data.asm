@@ -4,15 +4,28 @@ world_index:
 		db	0
 level_index:	
 		db	0
+
+player_sprite_buffer:
+		block	24*8
+crate_sprite_buffer:
+		block	24*8
+
+
 ; + 0 Указывает на то что нужно выбирать мир.
 ; + !0 Указывает на то что нужно выбирать уровень в ранее выбранном мире.
 is_world_selection_active:
-		db	0
-; + Адрес таблицы указывающий на расположение курсора при выборе мира и уровня.
-cursor_table_addr:	
-		db	0
+		dw	0
+; + Адрес таблицы указывающий на расположение курсора при выборе мира.
+world_cursor_table_addr:	
+		dw	0
+; + Адрес таблицы указывающий на расположение курсора при выборе уровня мира.
+level_cursor_table_addr:	
+		dw	0
 pressed_key:
 		db	0
+
+timer:
+		dw	0
 	
 		; 	9 - 89 - уровень с артефактом. (не критично)
 		;	7 - 97 - уровень с багом, нет стены в 2х ячейках.
@@ -22,16 +35,20 @@ pressed_key:
 	align	256
 cells:		block 	256		; ячейки уровня.
 
-crates:		db	0		; кол-во коробок на кровне
-width:		db	0		; ширинва уровня
-height:		db	0		; высота уровня
+crates:			db	0		; кол-во коробок на уровне
+width:			db	0		; ширинва уровня
+height:			db	0		; высота уровня
+	
+offsetX:		db	0		; смещение уровня по X
+offsetY:		db	0		; смещение уровня по Y
+	
+containersXY:		block	12		; координаты шести контейнеров.
+cratesXY:		block	12		; координаты шести коробок.
+playerXY:		dw	0		; координаты игрока.
 
-offsetX:	db	0		; смещение уровня по X
-offsetY:	db	0		; смещение уровня по Y
-
-containersXY:	block	12		; координаты шести контейнеров.
-cratesXY:	block	12		; координаты шести коробок.
-playerXY:	dw	0		; координаты игрока.
+playerObject:		block	OBJECT
+cratesObjects:		block	OBJECT * MAX_CRATES
+containersObjects:	block	OBJECT * MAX_CRATES
 
 		endmodule
 

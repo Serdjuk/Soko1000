@@ -6,4 +6,6 @@ text_steps_label:			db	"Steps",0
 text_world_label:			db	"World",0
 text_level_label:			db	"Level",0
 
+text_swap_label:			db	"'SPACE' - SWAP",0
+text_start_label:			db	"'ENTER' - START",0
 	endmodule

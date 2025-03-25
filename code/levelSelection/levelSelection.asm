@@ -6,6 +6,7 @@ init:
 	call	RENDER.clear_attributes
 	call	RENDER.clear_screen
 
+	
 	call	draw_world_indices
 	call	draw_level_indices
 	call	draw_labels
@@ -15,50 +16,106 @@ init:
 	call	RENDER.clear_attributes
 	call	paint_level_indices
 
+	call	show_info
+	; call	swap_selection
+
+
+
+	call	draw_world_cursor
+	call	draw_level_cursor
+
 
 .loop:
 	ei
 	halt
 
 	call	move
-	jr	.loop
+	call	swap_mode
+	
+	LOOP	.loop
 
+
+show_info:
+	ld	de,#50E0
+	ld	hl,TEXT.text_swap_label
+	call	RENDER.draw_word
+	ld	de,#50F1
+	ld	hl,TEXT.text_start_label
+	call	RENDER.draw_word
+
+	ld	hl,#5AE0
+	ld	b,#20
+	ld	a,%01000111
+	call	RENDER.draw_attr_line
+	ld	hl,#5AE1
+	ld	b,5
+	ld	a,%01000100
+	call	RENDER.draw_attr_line
+	ld	hl,#5AF2
+	ld	b,5
+	ld	a,%01000100
+	jp	RENDER.draw_attr_line
+
+; + IX - cursor table address
+; + DE - table address
+; + A - index of world or level
+; + B - attribute line length
 draw_cursor:
-	ld	hl,(DATA.cursor_table_addr)
-	ld	a,(hl)
-	inc	hl
-	ld	h,(hl)
-	ld	l,a
-	ld	b,3
+	ld	l,(ix)
+	ld	h,(ix + 1)
+	push	bc
+	push	af
 	call	RENDER.clear_paper_level_cursor
-	ld	a,(DATA.level_index)
+	pop	af
 	rlca
-	add 	low VAR.level_indices_attr_addr
+	add 	e
 	ld 	l,a
-	adc 	high VAR.level_indices_attr_addr
+	adc 	d
 	sub 	l
 	ld 	h,a
-	ld	(DATA.cursor_table_addr),hl
 	ld	a,(hl)
 	inc	hl
 	ld	h,(hl)
 	ld	l,a
-	ld	b,3
+
+	ld	(ix),l
+	ld	(ix + 1),h
+	pop	bc
 	ld	c,6 << 3
 	call	RENDER.paint_paper_level_cursor
 	ret
 
-input:
+swap_mode:
 	call	INPUT.keyListener
 	cp	SPACE
-	jr	z,.swap_selection
+	jr	z,swap_selection
 	cp	ENTER
 	ret	nz
 					; start level
 	
 
-	ret	
-.swap_selection:
+	call	RENDER.fade_out
+	call	RENDER.clear_screen
+	; ld	a,6
+	; call	RENDER.clear_attributes
+	pop	af
+	LOOP	LEVEL_INFO_SCREEN.init
+
+
+draw_world_cursor:
+	ld	a,(DATA.world_index)
+	ld	ix,DATA.world_cursor_table_addr
+	ld	de,VAR.world_indices_attr_addr
+	ld	b,2
+	jr	draw_cursor
+draw_level_cursor:
+	ld	a,(DATA.level_index)
+	ld	ix,DATA.level_cursor_table_addr
+	ld	de,VAR.level_indices_attr_addr
+	ld	b,3
+	jr	draw_cursor
+
+swap_selection:
 	ld	a,(DATA.is_world_selection_active)
 	xor	1
 	ld	(DATA.is_world_selection_active),a
@@ -67,8 +124,12 @@ input:
 move:
 	ld	a,(DATA.is_world_selection_active)
 	or	a
-	jr	z,move_world_cursor
-	jr	move_level_cursor
+	jr	nz,.swap_to_level
+	call	move_world_cursor
+	jr	draw_world_cursor
+.swap_to_level:
+	call	move_level_cursor
+	jr	draw_level_cursor
 
 move_world_cursor:
 	call	INPUT.keyListener
@@ -131,7 +192,6 @@ move_level_cursor:
 	and	7
 	jr	.set_new_index
 .right:
-
 	ld	a,(DATA.level_index)
 	inc	a
 	cp	MAX_LEVELS
