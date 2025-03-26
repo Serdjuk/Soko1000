@@ -6,11 +6,10 @@ level_index:
 		db	0
 
 player_sprite_buffer:
-		block	24*8
+		block	3*16*8
 crate_sprite_buffer:
-		block	24*8
-
-
+		block	3*16*8
+		
 ; + 0 Указывает на то что нужно выбирать мир.
 ; + !0 Указывает на то что нужно выбирать уровень в ранее выбранном мире.
 is_world_selection_active:
@@ -21,8 +20,11 @@ world_cursor_table_addr:
 ; + Адрес таблицы указывающий на расположение курсора при выборе уровня мира.
 level_cursor_table_addr:	
 		dw	0
+previous_pressed_key:
+		db	0
 pressed_key:
 		db	0
+
 
 timer:
 		dw	0
@@ -46,9 +48,6 @@ containersXY:		block	12		; координаты шести контейнеро�
 cratesXY:		block	12		; координаты шести коробок.
 playerXY:		dw	0		; координаты игрока.
 
-playerObject:		block	OBJECT
-cratesObjects:		block	OBJECT * MAX_CRATES
-containersObjects:	block	OBJECT * MAX_CRATES
 
 		endmodule
 

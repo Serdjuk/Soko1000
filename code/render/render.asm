@@ -187,6 +187,7 @@ draw_level:
 	pop	bc
 	djnz	.loop
 					; draw objects
+
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
 	ld	de,DATA.LEVEL.containersXY
@@ -207,8 +208,8 @@ draw_level:
 	push	bc	
 	call	UTILS.get_screen_addr
 	push	de
-	ld	de,SPRITE.crate_left
-	call	draw_object
+	ld	de,DATA.crate_sprite_buffer
+	call	draw_object_24x16
 	pop	de
 	pop	bc
 	djnz	.draw_crates
@@ -216,8 +217,43 @@ draw_level:
 .draw_player:
 	ld	de,DATA.LEVEL.playerXY
 	call	UTILS.get_screen_addr
-	ld	de,SPRITE.player_left
-	call	draw_object
+	ld	de,DATA.player_sprite_buffer
+	call	draw_object_24x16
+	ret
+
+; + DE - sprite address
+; + HL - screen address
+; + A - position X
+draw_object_24x16:
+	rrca
+	jr	nc,draw_sprite_24x16
+	ex	de,hl
+	ld	bc,3*16*4
+	add	hl,bc
+	ex	de,hl
+; + HL - screen address
+; + DE - sprite address
+draw_sprite_24x16:
+	ld	b,12
+.loop:
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	inc 	l
+	inc	de
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	dec 	l
+	dec 	l
+	inc	de
+	call	UTILS.down_hl
+	djnz	.loop
 	ret
 
 ; + DE - sprite address
@@ -266,6 +302,15 @@ clear_sprite_12x12:
 	call	UTILS.down_hl
 	djnz	.loop
 	ret
+
+
+
+shift_sprite:
+
+
+
+	ret
+
 
 clear_screen:
 	ld	hl,#4000

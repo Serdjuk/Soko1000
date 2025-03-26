@@ -8,7 +8,9 @@ SPACE					equ	' '
 MAX_CRATES:				equ	6
 MAX_LEVEL_SIZE				equ 	#10
 
-
-PLAYER:					equ	1
-CRATE:					equ	2
-CONTAINER:				equ	4
+					; TYPES
+FLOOR:					equ	0
+WALL:					equ	1
+PLAYER:					equ	2
+CRATE:					equ	4
+CONTAINER:				equ	8

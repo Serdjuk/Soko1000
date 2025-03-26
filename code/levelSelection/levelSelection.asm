@@ -11,27 +11,16 @@ init:
 	call	draw_level_indices
 	call	draw_labels
 
-
 	ld	a,3
-	call	RENDER.clear_attributes
+	call	RENDER.fade_in
 	call	paint_level_indices
-
 	call	show_info
-	; call	swap_selection
-
-
-
 	call	draw_world_cursor
 	call	draw_level_cursor
 
-
 .loop:
-	ei
-	halt
-
 	call	move
 	call	swap_mode
-	
 	LOOP	.loop
 
 
@@ -86,10 +75,9 @@ draw_cursor:
 	ret
 
 swap_mode:
-	call	INPUT.keyListener
-	cp	SPACE
+	call	INPUT.pressed_space
 	jr	z,swap_selection
-	cp	ENTER
+	call	INPUT.pressed_enter
 	ret	nz
 					; start level
 	
@@ -132,13 +120,9 @@ move:
 	jr	draw_level_cursor
 
 move_world_cursor:
-	call	INPUT.keyListener
-	ld	hl,VAR.key_binding + 2
-	cp	(hl)
-	inc	hl
+	call	INPUT.pressed_left
 	jr	z,.left
-	cp	(hl)
-	inc	hl
+	call	INPUT.pressed_right
 	jr	z,.right
 	ret
 .right:
@@ -159,20 +143,14 @@ move_world_cursor:
 
 
 move_level_cursor:
-	call	INPUT.keyListener
-	ld	hl,VAR.key_binding
-	cp	(hl)
-	inc	hl
-	jr	z,.up
-	cp	(hl)
-	inc	hl
-	jr	z,.down
-	cp	(hl)
-	inc	hl
+	call	INPUT.pressed_left
 	jr	z,.left
-	cp	(hl)
-	inc	hl
+	call	INPUT.pressed_right
 	jr	z,.right
+	call	INPUT.pressed_up
+	jr	z,.up
+	call	INPUT.pressed_down
+	jr	z,.down
 	ret
 .up:
 	ld	a,(DATA.level_index)

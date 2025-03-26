@@ -5,6 +5,8 @@ key_binding:
 		db	'S'		; down
 		db	'A'		; left
 		db	'D'		; right
+		db	'B'		; BOM
+		db	ENTER		; action
 
 ; + Таблица смещения горизонтальных символов экрана кратных 12 пикселям.
 scr_offset_x:	

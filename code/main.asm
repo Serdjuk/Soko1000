@@ -38,13 +38,14 @@ prog_end:
 
 		display "Level cells: ",/A, DATA.LEVEL.cells
 		display "Level crates count: ",/A, DATA.LEVEL.crates
-		display "Level crates positions: ",/A, DATA.LEVEL.cratesXY
-		display "Level container positions: ",/A, DATA.LEVEL.containersXY
+		; display "Level crates positions: ",/A, DATA.LEVEL.cratesXY
+		; display "Level container positions: ",/A, DATA.LEVEL.containersXY
 
 		display "LAST BYTE ADDR: ",/A, prog_end
+		display "LAST DATA ADDR: ",/A, $
 		display "FREE: ",/A, #FFFF - $
 
-		display "crates addr: ",/A, DATA.LEVEL.cratesObjects
-		display "containers addr: ",/A, DATA.LEVEL.containersObjects
+		; display "crates addr: ",/A, DATA.LEVEL.cratesObjects
+		; display "containers addr: ",/A, DATA.LEVEL.containersObjects
 
 	endif

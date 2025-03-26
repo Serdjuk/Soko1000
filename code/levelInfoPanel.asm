@@ -1,24 +1,7 @@
 	module	LEVEL_INFO_PANEL
 ; + 
 init:
-	ld	hl,DATA.LEVEL.cells
-	ld	de,DATA.LEVEL.cells + 1
-	ld	bc,#FF
-	ld	(hl),l
-	ldir
 
-	ld	hl,(DATA.world_index)
-	ld	a,l			; world id
-	inc	hl
-	ld	c,h			; level id
-	call	CONVERT.get_level_address_hl
-	call	CONVERT.depack
-	call	CONVERT.offset_level_objects_positions
-	call	GAME.set_pre_positions
-	call 	RENDER.draw_level
-
-
-	
 
 	ld	hl,TEXT.text_world_label
 	ld	de,#4039

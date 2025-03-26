@@ -33,6 +33,7 @@ init:
 	ld	hl,#48CB + 7
 	ex	de,hl
 	call	RENDER.draw_word
+	ld	a,7
 	call	RENDER.fade_in
 .loop:
 	call	UTILS.wait_any_key

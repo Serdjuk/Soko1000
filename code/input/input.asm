@@ -8,11 +8,65 @@
 ; A...G		65022	FDFE	11111101 11111110
 ; CS...V	65278	FEFE	11111110 11111110
 	module 	INPUT
+
+get_both_keys:
+	ld	hl,(DATA.previous_pressed_key)
+	ld	a,l
+	or	a
+	ret
+
+pressed_right:
+	call	get_both_keys
+	ret	nz
+	add	h
+	ld	l,a
+	ld	a,(VAR.key_binding + 3)
+	cp	l
+	ret
+
+pressed_left:
+	call	get_both_keys
+	ret	nz
+	add	h
+	ld	l,a
+	ld	a,(VAR.key_binding + 2)
+	cp	l
+	ret
+pressed_down:
+	call	get_both_keys
+	ret	nz
+	add	h
+	ld	l,a
+	ld	a,(VAR.key_binding + 1)
+	cp	l
+	ret
+pressed_up:
+	call	get_both_keys
+	ret	nz
+	add	h
+	ld	l,a
+	ld	a,(VAR.key_binding)
+	cp	l
+	ret
+
+pressed_space:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	SPACE
+	ret
+pressed_enter:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	ENTER
+	ret
+
 keyListener:
 	call getAKey
 	ld a,r
 	sub 3
-	ret z   ; key not pressed
+	jr	z,l1   			; key not pressed	
 	sub 4
 	rra 
 div5:
@@ -26,12 +80,9 @@ getChar:
 	adc a,high rows
 	sub l
 	ld h,a
-	;   ld l,a
-	;   ld h,0
-	;   ld bc,rows
-	;   add hl,bc
-	ld a,(hl)   ; received char (key)
-	// .....
+	ld 	a,(hl)   		; received char (key)
+l1:
+	ld	(DATA.pressed_key),a
 	ret
 getAKey:
 	ld   bc,#FEFE

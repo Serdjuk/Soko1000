@@ -2,14 +2,33 @@
 
 init:
 
-	; ld      d,0 or (7 << 3)
-	; call	RENDER.grid
+	ld	hl,DATA.LEVEL.cells
+	ld	de,DATA.LEVEL.cells + 1
+	ld	bc,#FF
+	ld	(hl),l
+	ldir
+
+	ld	hl,(DATA.world_index)
+	ld	a,l			; world id
+	inc	hl
+	ld	c,h			; level id
+	call	CONVERT.get_level_address_hl
+	call	CONVERT.depack
+	call	CONVERT.offset_level_objects_positions
+	call	GAME.set_pre_positions
+	call 	RENDER.draw_level
+
+
 	call	LEVEL_INFO_PANEL.init
 	ld	a,6
 	call	RENDER.fade_in
 
 start:
 	call	GAME.update
+	; call	input
+
+
+
 
 	LOOP 	start
 
@@ -18,12 +37,12 @@ update:
 	call	input
 	call	move
 	call	set_pre_positions
-	call	is_level_completed
-	xor	a
-	or	b
-	ret	nz
-	ld	a,2
-	out	(254),a
+	; call	is_level_completed
+	; xor	a
+	; or	b
+	; ret	nz
+	; ld	a,2
+	; out	(254),a
 	ret
 
 set_pre_positions:
@@ -66,8 +85,8 @@ draw_objects:
 	push	hl
 	call	UTILS.get_screen_addr
 	push	de
-	ld	de,SPRITE.crate_left
-	call	RENDER.draw_object
+	ld	de,DATA.crate_sprite_buffer
+	call	RENDER.draw_object_24x16
 	pop	de
 	pop	hl
 	pop	bc
@@ -101,8 +120,8 @@ clear_objects:
 	djnz	.loop
 	ret
 
-; + DE - sprite previous position address
-; + HL - sprite position address
+; ; + DE - sprite previous position address
+; ; + HL - sprite position address
 .clear_sprite:
 	ld	a,(de)
 	cp	(hl)
@@ -129,19 +148,20 @@ input:
 	ld	a,(DATA.is_moving)
 	or	a
 	ret	nz			; выход если движение игрока в процессе.
-	call	INPUT.keyListener
+	
 	ld	hl,DATA.LEVEL.playerXY
 	ld	e,(hl)
 	inc	hl
 	ld	d,(hl)
-	cp	'W'
-	jr	z,up
-	cp	'S'
-	jr	z,down
-	cp	'A'
+
+	call	INPUT.pressed_left
 	jp	z,left
-	cp	'D'
+	call	INPUT.pressed_right
 	jr	z,right
+	call	INPUT.pressed_up
+	jr	z,up
+	call	INPUT.pressed_down
+	jr	z,down
 	ret
 right:
 	inc	e
@@ -178,8 +198,8 @@ set_player_position:
 	ld	(hl),e
 	inc	hl
 	ld	(hl),d
-	ld	hl,DATA.is_moving
-	inc	(hl)
+	ld	a,12
+	ld	(DATA.is_moving),a
 	ret
 up:
 	dec	d
@@ -209,7 +229,6 @@ up:
 	ld	(hl),d			; устанавливаем коробке новую Y координату.
 	inc	d			; новый Y игрока.
 	jr	set_player_position
-	ret	
 
 down:
 	inc	d
@@ -239,7 +258,6 @@ down:
 	ld	(hl),d			; устанавливаем коробке новую Y координату.
 	dec	d			; новый Y игрока.
 	jr	set_player_position
-	ret
 left:
 	dec	e
 	push	de
@@ -294,44 +312,44 @@ has_crate_on_position:
 	ld	(DATA.moving_crate_addr),hl
 	ret
 
-; + return: B - if B == 0  {level completed} 
-;	TODO проверить - случайно обнаружил что сработало прохождение при неправильной расстановке коробок.
-is_level_completed:
-	ld	hl,DATA.LEVEL.cratesXY
-	ld	a,(DATA.LEVEL.crates)
-	ld	b,a
-.l2
-	push	bc
-	ld	de,DATA.LEVEL.containersXY
-.loop:
-	call	.checkXY
-	inc	de
-	inc	de
-	jr	nz,.not_compare
-	ld	b,1
-.not_compare:
-	djnz	.loop
-	inc	hl
-	inc	hl
-	ld	a,c
-	pop	bc
-	or	a
-	ret	z
-	djnz	.l2
-	ret
-.checkXY:
-	ld	c,0
-	ld	a,(de)
-	cp	(hl)
-	ret	nz
-	inc	c
-	inc	de
-	inc	hl
-	ld	a,(de)
-	cp	(hl)
-	dec	de
-	dec	hl
-	ret
+; ; + return: B - if B == 0  {level completed} 
+; ;	TODO проверить - случайно обнаружил что сработало прохождение при неправильной расстановке коробок.
+; is_level_completed:
+; 	ld	hl,DATA.LEVEL.cratesXY
+; 	ld	a,(DATA.LEVEL.crates)
+; 	ld	b,a
+; .l2
+; 	push	bc
+; 	ld	de,DATA.LEVEL.containersXY
+; .loop:
+; 	call	.checkXY
+; 	inc	de
+; 	inc	de
+; 	jr	nz,.not_compare
+; 	ld	b,1
+; .not_compare:
+; 	djnz	.loop
+; 	inc	hl
+; 	inc	hl
+; 	ld	a,c
+; 	pop	bc
+; 	or	a
+; 	ret	z
+; 	djnz	.l2
+; 	ret
+; .checkXY:
+; 	ld	c,0
+; 	ld	a,(de)
+; 	cp	(hl)
+; 	ret	nz
+; 	inc	c
+; 	inc	de
+; 	inc	hl
+; 	ld	a,(de)
+; 	cp	(hl)
+; 	dec	de
+; 	dec	hl
+; 	ret
 
 ; + Обновляем прогресс обозначая текущий руровень в текущем мире как пройденный.
 update_progress:

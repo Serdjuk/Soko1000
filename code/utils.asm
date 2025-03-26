@@ -10,7 +10,7 @@ wait_any_key:
         ret
 
 ; + DE - positions address (X,Y).
-; + return: HL - screen address for draw.
+; + return: HL - screen address.
 ; + return: A - position X
 ; + DE + 2 on exit.
 get_screen_addr:
@@ -197,27 +197,68 @@ map_addr:
 	add	hl,de
 	ret
 
-; + A - position X
-copy_player_sprite_to_buffer:
-	ld	de,DATA.player_sprite_buffer
-	ld	hl,SPRITE.player_left
-	rrca
-	jr	nc,.loop - 2
-	ld	bc,32
-	add	hl,bc
-	ld	b,12
+; + HL - sprite single address
+; + DE - sprite buffer
+; + Сдвигает спрайт 8 раз.
+multiply_sprite_16x16_to_24x16:
+	ld	b,16
+	push	de
+.copy_sprite:
+	ld	a,(hl)
+	ld	(de),a
+	inc	de
+	inc	hl
+	ld	a,(hl)
+	ld	(de),a
+	inc	hl
+	inc	de
+	inc	de
+	djnz	.copy_sprite
+	pop	hl
+	ld	b,7
 .loop:
-	ld	a,(hl)
-	ld	(de),a
+	push	bc
+	ld	bc,3*16
+	ldir
+	push	hl
+	ld	b,3*16
+	xor	a
+.shift_right:
+	rr	(hl)
 	inc	hl
-	inc	de
-	ld	a,(hl)
-	ld	(de),a
-	inc	hl
-	inc	de
-	inc	de
+	djnz	.shift_right
+	ex	de,hl
+	pop	hl
+	pop	bc
 	djnz	.loop
 	ret
+
+; + E - X
+; + D - Y
+; + B - сколько объектов подряд проверить
+; + HL - objects buffer
+; + return: B; если B != 0 то в HL адрес искомого объекта со смещением (OBEJCT.y), иначе объект не найден.
+; get_object_by_position:
+; 	push	bc
+; 	push	hl
+; 	inc	hl
+; 	inc	hl
+; 	ld	a,(hl)
+; 	cp	e
+; 	jr	nz,.next
+; 	inc	hl
+; 	inc	hl
+; 	ld	a,(hl)
+; 	cp	d
+; 	jr	nz,.next
+; 	ret
+; .next:
+; 	pop	hl
+; 	ld	bc,OBJECT
+; 	add	hl,bc
+; 	pop	bc
+; 	djnz	get_object_by_position
+; 	ret
 
 pack_progress_for_save:
 	ld	hl,DATA.compressed_progress
@@ -251,7 +292,7 @@ pack_progress_for_save:
 unpack_loaded_progress:
 	ld	de,DATA.compressed_progress
 	ld	hl,DATA.progress
-	ld	bc,DATA.world_index * DATA.level_index
+	ld	bc,DATA.world_index * DATA.level_index		; перемнажаем 2 16 битных адреса :) нужно перемножать содержимое по этим адресам.
 .loop:
 	push	bc
 	
