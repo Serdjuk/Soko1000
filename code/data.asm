@@ -88,7 +88,8 @@ progress:		block	1000	; 1000 байт на 100 уровней. Каждый ба
 level_indices_of_each_world:
 		block	MAX_WORLDS
 ; + 1000 бит на 1000 уровней. Каждый включенный бит означает что уровень был пройден.
-compressed_progress:	block	125	
+compressed_progress:	
+		block	125	
 ;-----------------------------------------------------
 
 
