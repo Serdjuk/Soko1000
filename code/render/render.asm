@@ -1,26 +1,48 @@
 	module	RENDER
 
-fill_symbol:
-	push	de
-	push	bc
+; + HL - char address
+; + DE - screen address
+draw_symbol:
 	ld	b,8
-	; ld	a,#FF
 .loop:
+	ld	a,(hl)
 	ld	(de),a
 	inc	d
+	inc	hl
 	djnz	.loop
-	pop	bc
-	pop	de
 	ret
+
+; + C - width
+; + B - heihgt
+; + A - color
+; + HL - attributes address
+fill_attr_area:
+.loop:
+	push	bc
+	push	hl
+.line:
+	ld	(hl),a
+	inc	l
+	dec	c
+	jr	nz,.line
+
+	pop	hl
+	ld	bc,#20
+	add	hl,bc
+	pop	bc
+	djnz	.loop
+	ret
+
+
 ; + A - color
 ; + B - length
 ; + HL - attribute address
-draw_attr_line:
+paint_attr_line:
 	ld	(hl),a
 	inc	l
-	djnz	draw_attr_line
+	djnz	paint_attr_line
 	ret
-; + C - color ink: ?????!!!
+; + C - color ink: 00000111
 ; + B - length
 ; + HL - attribute address
 paint_ink_level_cursor:
@@ -31,9 +53,10 @@ paint_ink_level_cursor:
 	inc	l
 	djnz	paint_ink_level_cursor
 	ret
-; + C - color paper: ??!!!???
+; + C - color paper: 00111000
 ; + B - length
 ; + HL - attribute address
+; + Устанавливает PAPER сохраняя INK на атрибуте.
 paint_paper_level_cursor:
 	ld	a,(hl)
 	and	%11000111
@@ -55,21 +78,24 @@ clear_paper_level_cursor:
 ; + A - to color
 fade_in:
 	ld	e,a
+	ld	d,0
+.l1:
 	ei	
 	halt
 	ld	hl,$5800
 	ld	bc,#0300
 .loop:
-	ld	(hl),e
+	ld	(hl),d
 	inc	hl
 	dec	bc
 	ld	a,c
 	or	b
 	jr	nz,.loop
-	inc	e
-	bit	3,e
-	jr	z,fade_in + 1
-	ret
+	inc	d
+	ld	a,e
+	cp	d
+	ret	c
+	jr	.l1
 
 fade_out:
 	ld	a,8
@@ -121,17 +147,12 @@ draw_word:
 ; + A - char
 ; + DE - screen address
 draw_char:
+	; TODO - сделать динамическое изменение шрифта при печати по какому то флагу.
 	push	hl
 	push	de
 	push	bc
 	call	UTILS.char_addr
-	ld	b,8
-.loop:
-	ld	a,(hl)
-	ld	(de),a
-	inc	d
-	inc	l
-	djnz	.loop
+	call	draw_symbol
 	pop	bc
 	pop	de
 	pop	hl
@@ -139,15 +160,19 @@ draw_char:
 
 ; + DRAW LEVEL with all objects !!!
 draw_level:
+
+
+	; подготовить 2 вида стен текущего мира.
+	ld	a,(DATA.world_index)
+	call	UTILS.get_sprite_wall_address
+	call	UTILS.sprite_dublication_with_4_bit_offset
+
+	; начинаем отрисовывать стены уровня.
 	ld	hl,#4000
 	ld	bc,MAX_LEVEL_SIZE + MAX_LEVEL_SIZE * 256
-	
-
 	ld	ix,DATA.LEVEL.cells
 
 .loop:
-	; ld	a,(DATA.LEVEL.offsetX)
-	; dec	a
 	xor	a
 	ld	(DATA.rolling_x_bit),a
 	push	bc
@@ -156,11 +181,10 @@ draw_level:
 	ld	a,(ix)
 	inc	ix
 	or	a
-	ld	de,SPRITE.wall_01_left
 	push	bc
 	push	hl
 	ld	a,(DATA.rolling_x_bit)
-	call	nz,draw_object
+	call	nz,draw_wall
 	pop	hl
 	pop	bc
 	inc	l
@@ -186,7 +210,7 @@ draw_level:
 	call	UTILS.down_hl
 	pop	bc
 	djnz	.loop
-					; draw objects
+					; draw containers
 
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
@@ -201,6 +225,17 @@ draw_level:
 	pop	bc
 	djnz	.draw_containers
 
+
+	; создаем по 8 сдвинутых спрайтов для коробки и для персонажа.
+	ld	hl,SPRITE.character
+	ld	de,DATA.player_sprite_buffer
+	call	UTILS.multiply_sprite_16x16_to_24x16
+	; TODO сдлеать рандомный выбор коробок из существующих вариантов.
+	ld	hl,SPRITE.crate_v2
+	ld	de,DATA.crate_sprite_buffer
+	call	UTILS.multiply_sprite_16x16_to_24x16
+
+					; draw crate
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
 	ld	de,DATA.LEVEL.cratesXY
@@ -255,6 +290,24 @@ draw_sprite_24x16:
 	call	UTILS.down_hl
 	djnz	.loop
 	ret
+; + Рисует стену при построении уровня. Выбирает один из 2х вариантов стен рандомно.
+; + Каждый вариант имет 2 спрайта, стандартный и сдвинутый на 4 бита.
+; + За счет координаты X происходит выбор какой именно спрайт рисовать.
+draw_wall:
+	exa
+	push	hl
+	call	UTILS.Rand16
+	ld	a,l
+	sbc	h
+	cp	#40
+	ld	hl,DATA.player_sprite_buffer
+	jr	c,.next_wall
+	ld	bc,64
+	add	hl,bc
+.next_wall:
+	ex	de,hl
+	pop	hl
+	exa
 
 ; + DE - sprite address
 ; + HL - screen address
@@ -270,7 +323,7 @@ draw_object:
 ; + HL - screen address
 ; + DE - sprite address
 draw_sprite_16x16:
-	ld	bc,#0c02
+	ld	b,#0c
 .loop:
 	ld	a,(de)
 	or	(hl)
@@ -302,15 +355,6 @@ clear_sprite_12x12:
 	call	UTILS.down_hl
 	djnz	.loop
 	ret
-
-
-
-shift_sprite:
-
-
-
-	ret
-
 
 clear_screen:
 	ld	hl,#4000

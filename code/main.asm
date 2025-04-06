@@ -19,6 +19,7 @@ prog_start:
 
 		include	"loop.asm"
 		include	"render/render.asm"
+		include	"animations/animations.asm"
 		include "graphics/sprites.asm"
 		include	"game/game.asm"
 		include	"input/input.asm"
@@ -34,18 +35,17 @@ prog_start:
 
 		tapend
 prog_end:
+
+
 		include	"data.asm"	; не включать в билд, там мусор изначально.
 
 		display "Level cells: ",/A, DATA.LEVEL.cells
-		display "Level crates count: ",/A, DATA.LEVEL.crates
-		; display "Level crates positions: ",/A, DATA.LEVEL.cratesXY
-		; display "Level container positions: ",/A, DATA.LEVEL.containersXY
-
+		display "level_indices_of_each_world: ",/A, DATA.level_indices_of_each_world
+		display "PROGRESS ADDRESS: ",/A, DATA.progress
 		display "LAST BYTE ADDR: ",/A, prog_end
-		display "LAST DATA ADDR: ",/A, $
+		display "DATA LENGTH: ",/A,DATA.end - DATA.start
 		display "FREE: ",/A, #FFFF - $
 
-		; display "crates addr: ",/A, DATA.LEVEL.cratesObjects
-		; display "containers addr: ",/A, DATA.LEVEL.containersObjects
+
 
 	endif

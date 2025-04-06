@@ -14,14 +14,19 @@ code: 	; 23774
 	out	(#FE),a
 	LOAD_TAPE #4000, #1B00
 	LOAD_TAPE endB, prog_end - prog_start
-
+	
 	call	RENDER.clear_screen
-	ld	hl,SPRITE.player_left
-	ld	de,DATA.player_sprite_buffer
-	call	UTILS.multiply_sprite_16x16_to_24x16
-	ld	hl,SPRITE.crate_left
-	ld	de,DATA.crate_sprite_buffer
-	call	UTILS.multiply_sprite_16x16_to_24x16
+	ld	a,7
+	call	RENDER.clear_attributes
+
+	xor	a
+	out	(254),a
+	ld	hl,DATA.start
+	ld	de,DATA.start + 1
+	ld	bc,(DATA.end - DATA.start) - 1
+	ld	(hl),a
+	ldir
+
 	ld	hl,LEVEL_SELECTION.init
 	ld	sp,endB
 	jp	loop

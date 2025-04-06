@@ -39,17 +39,18 @@ get_screen_addr:
 	inc	de
 	pop	af
 	ret
-;	http://z80-heaven.wikidot.com/math#toc10
-;Inputs:
-;     	DE and A are factors
-;Outputs:
-;     	A is not changed
-;     	B is 0
-;     	C is not changed
-;     	DE is not changed
-;     	HL is the product
-;Time:
-;     	342+6x
+
+; + 	http://z80-heaven.wikidot.com/math#toc10
+; + Inputs:
+; +      	DE and A are factors
+; + Outputs:
+; +      	A is not changed
+; +      	B is 0
+; +      	C is not changed
+; +      	DE is not changed
+; +      	HL is the product
+; + Time:
+; +      	342+6x
 mul_de_a:
 	ld 	b,8          	;7           7
 	ld	hl,0         	;10         10
@@ -117,6 +118,42 @@ down_hl_12:
 	ld	h,a
 
 	ret
+; + A - world index
+; + Получаем адрес спрайта шаблона стены который будет использоваться в текущем мире.
+get_sprite_wall_address:
+	ld	l,a
+	ld	h,0
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	ld	bc,SPRITE.wall_01_v1
+	add	hl,bc
+	ret
+
+; + HL - template sprite address
+; + Копируется шаблон спрайта и создается еще одна его копия сдвинутая на 4 бита по адресу:  DATA.player_sprite_buffer (для двух шаблонов подряд)
+sprite_dublication_with_4_bit_offset:
+	ld	b,2
+	ld	de,DATA.player_sprite_buffer
+.loop:
+	push	bc
+	push	hl
+	push	de
+	ld	bc,32
+	push	bc
+	ldir
+	pop	bc
+	pop	hl
+	ldir
+	call	sr_sprite_16x16_4_bits
+	pop	hl
+	ld	bc,32
+	add	hl,bc
+	pop	bc
+	djnz	.loop
 
 ; + shift sprite to right on 4 bits.
 ; + HL - sprite address
@@ -128,18 +165,6 @@ sr_sprite_16x16_4_bits:
 	inc	hl
 	djnz	.loop
 	ret
-; + shift sprite to left on 4 bits.
-; + HL - end of sprite address - 1
-sl_sprite_16x16_4_bits:
-	ld	b,32
-	xor	a
-.loop:
-	rld	
-	dec	hl
-	djnz	.loop
-	ret
-
-
 
 ; + Input: HL = number to convert, DE = location of ASCII string
 ; + Output: ASCII string at (DE)
@@ -169,6 +194,25 @@ num2dec:
 	xor	a
 	ld	(de),a
 	ret
+
+; + HL = pseudo-random number, period 65536
+Rand16	ld	de,12345		; Seed is usually 0
+	ld	a,d
+	ld	h,e
+	ld	l,253
+	or	a
+	sbc	hl,de
+	sbc	a,0
+	sbc	hl,de
+	ld	d,0
+	sbc	a,d
+	ld	e,a
+	sbc	hl,de
+	jr	nc,Rand
+	inc	hl
+Rand	ld	(Rand16+1),hl
+	ret
+
 ; + A - char
 ; + return: HL - char address 
 char_addr: 
@@ -212,6 +256,8 @@ multiply_sprite_16x16_to_24x16:
 	ld	(de),a
 	inc	hl
 	inc	de
+	xor	a
+	ld	(de),a
 	inc	de
 	djnz	.copy_sprite
 	pop	hl
@@ -233,32 +279,21 @@ multiply_sprite_16x16_to_24x16:
 	djnz	.loop
 	ret
 
-; + E - X
-; + D - Y
-; + B - сколько объектов подряд проверить
-; + HL - objects buffer
-; + return: B; если B != 0 то в HL адрес искомого объекта со смещением (OBEJCT.y), иначе объект не найден.
-; get_object_by_position:
-; 	push	bc
-; 	push	hl
-; 	inc	hl
-; 	inc	hl
-; 	ld	a,(hl)
-; 	cp	e
-; 	jr	nz,.next
-; 	inc	hl
-; 	inc	hl
-; 	ld	a,(hl)
-; 	cp	d
-; 	jr	nz,.next
-; 	ret
-; .next:
-; 	pop	hl
-; 	ld	bc,OBJECT
-; 	add	hl,bc
-; 	pop	bc
-; 	djnz	get_object_by_position
-; 	ret
+; + меняет прогресс прохождения.
+; + устанавливает флаг о том что уровень был пройден.
+set_progress:
+	ld	a,(DATA.world_index)
+	ld	e,100
+	ld	d,0
+	call	UTILS.mul_de_a
+	ld	a,(DATA.level_index)
+	ld	e,a
+	add	hl,de
+	ld	de,DATA.progress
+	add	hl,de
+	inc	(hl)
+	ret
+
 
 pack_progress_for_save:
 	ld	hl,DATA.compressed_progress

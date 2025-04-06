@@ -1,5 +1,7 @@
 	module 	GAME
 
+	;	TODO - сделать модуль ANIMATION: (двежение спрайтов на 12 пикселей, моргание персонажа, блик по рандомной коробке)
+
 init:
 
 	ld	hl,DATA.LEVEL.cells
@@ -18,31 +20,44 @@ init:
 	call	GAME.set_pre_positions
 	call 	RENDER.draw_level
 
+	; отчистить буфер флагов определения конца уровня.
+	ld	hl,DATA.buffer_flag_pressed
+	ld	de,DATA.buffer_flag_pressed + 1
+	ld	bc,5
+	ld	(hl),0
+	ldir
 
 	call	LEVEL_INFO_PANEL.init
 	ld	a,6
 	call	RENDER.fade_in
 
 start:
-	call	GAME.update
-	; call	input
+	call	update
+	
 
+	; check level completed
+	ld	a,(DATA.is_moving)
+	or	a
+	jr	z,.end
+	call	check_all_containers
+	call	is_level_completed
+	xor	a
+	cp	b
+	jr	nz,.end
+	; level completed
+	call	UTILS.set_progress
+	LOOP	LEVEL_SELECTION.init
 
-
+.end:
+	xor	a
+	ld	(DATA.is_moving),a
 
 	LOOP 	start
 
 update:
-
 	call	input
 	call	move
 	call	set_pre_positions
-	; call	is_level_completed
-	; xor	a
-	; or	b
-	; ret	nz
-	; ld	a,2
-	; out	(254),a
 	ret
 
 set_pre_positions:
@@ -63,14 +78,10 @@ move:
 	or	a
 	ret	z			; выход если не было задано движение.
 
-
-
 	call	clear_objects
+
 	call	draw_objects
 
-
-	xor	a
-	ld	(DATA.is_moving),a
 	ret
 
 
@@ -80,7 +91,8 @@ draw_objects:
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
 	ld	de,DATA.LEVEL.cratesXY
-.loop:
+	push	bc
+.loop_crates:
 	push	bc
 	push	hl
 	call	UTILS.get_screen_addr
@@ -92,7 +104,27 @@ draw_objects:
 	pop	bc
 	inc	hl
 	inc	hl
-	djnz	.loop
+	djnz	.loop_crates
+
+	pop	bc
+	ld	de,DATA.LEVEL.containersXY
+.loop_containers:
+	push	bc
+	push	hl
+	call	UTILS.get_screen_addr
+	push	de
+	dec	de
+	dec	de
+	ld	a,(de)
+	ld	de,SPRITE.container_anim_1
+	call	RENDER.draw_object
+	pop	de
+	pop	hl
+	pop	bc
+	inc	hl
+	inc	hl
+	djnz	.loop_containers
+
 	ret
 
 clear_objects:
@@ -120,8 +152,8 @@ clear_objects:
 	djnz	.loop
 	ret
 
-; ; + DE - sprite previous position address
-; ; + HL - sprite position address
+; + DE - sprite previous position address
+; + HL - sprite position address
 .clear_sprite:
 	ld	a,(de)
 	cp	(hl)
@@ -312,46 +344,66 @@ has_crate_on_position:
 	ld	(DATA.moving_crate_addr),hl
 	ret
 
-; ; + return: B - if B == 0  {level completed} 
-; ;	TODO проверить - случайно обнаружил что сработало прохождение при неправильной расстановке коробок.
-; is_level_completed:
-; 	ld	hl,DATA.LEVEL.cratesXY
-; 	ld	a,(DATA.LEVEL.crates)
-; 	ld	b,a
-; .l2
-; 	push	bc
-; 	ld	de,DATA.LEVEL.containersXY
-; .loop:
-; 	call	.checkXY
-; 	inc	de
-; 	inc	de
-; 	jr	nz,.not_compare
-; 	ld	b,1
-; .not_compare:
-; 	djnz	.loop
-; 	inc	hl
-; 	inc	hl
-; 	ld	a,c
-; 	pop	bc
-; 	or	a
-; 	ret	z
-; 	djnz	.l2
-; 	ret
-; .checkXY:
-; 	ld	c,0
-; 	ld	a,(de)
-; 	cp	(hl)
-; 	ret	nz
-; 	inc	c
-; 	inc	de
-; 	inc	hl
-; 	ld	a,(de)
-; 	cp	(hl)
-; 	dec	de
-; 	dec	hl
-; 	ret
+; return: if B == 0 level completed else not completed
+is_level_completed:
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+	ld	hl,DATA.buffer_flag_pressed
+.loop:
+	ld	a,(hl)
+	or	a
+	ret	z
+	inc	hl
+	djnz	.loop
+	ret
 
-; + Обновляем прогресс обозначая текущий руровень в текущем мире как пройденный.
+; + Проверяем все контейнеры на наличие на них ящиков.
+check_all_containers:
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+	ld	ix,DATA.buffer_flag_pressed
+	ld	de,DATA.LEVEL.containersXY
+.loop:
+	push	bc
+	push	af
+	ld	b,a
+	call	check_crate_on_container
+	inc	de
+	inc	de
+	pop	af
+	pop	bc
+	djnz	.loop
+	ret
+
+; + DE - position address of container.
+; + IX - buffer flag pressed address
+; + B - crates count
+; + return: ix + 1
+; + проверка контейнера на наличие ящика на нем.
+check_crate_on_container:
+	ld	hl,DATA.LEVEL.cratesXY
+.loop:
+	ld	a,(de)
+	cp	(hl)
+	inc	hl
+	inc	de
+	jr	nz,.to_next_crate
+	ld	a,(de)
+	cp	(hl)
+	jr	nz,.to_next_crate
+	dec	de
+	ld	(ix),1
+	inc	ix
+	ret
+.to_next_crate:
+	inc	hl
+	dec	de
+	djnz	.loop
+	ld	(ix),0
+	inc	ix
+	ret
+
+; + Обновляем прогресс обозначая текущий уровень в текущем мире как пройденный.
 update_progress:
 	ld	a,(DATA.world_index)
 	ld	de,100
