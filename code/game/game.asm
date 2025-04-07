@@ -55,7 +55,13 @@ start:
 	LOOP 	start
 
 update:
+
+	di	
+	push	iy
 	call	input
+	pop	iy
+	ei
+
 	call	move
 	call	set_pre_positions
 	ret
@@ -181,7 +187,10 @@ input:
 	ld	a,(DATA.direction)
 	or	a
 	ret	nz			; выход если движение игрока в процессе.
-	
+
+	ld	ix,ANIMATIONS.sprite_addr_for_draw
+	ld	iy,ANIMATIONS.sprite_clear_scr_addr
+
 	ld	hl,DATA.LEVEL.playerXY
 	ld	e,(hl)
 	inc	hl

@@ -7,6 +7,7 @@ loop:
 	dec	hl
 	ld	(hl),a
 	pop	hl
+	; ld 	iy,#5C3A
 	ei
 	halt
 	ld	bc,loop
