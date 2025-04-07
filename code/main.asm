@@ -40,6 +40,7 @@ prog_end:
 		include	"data.asm"	; не включать в билд, там мусор изначально.
 
 		display "Level cells: ",/A, DATA.LEVEL.cells
+		display "Shift sprites: ",/A, DATA.player_sprite_buffer
 		display "level_indices_of_each_world: ",/A, DATA.level_indices_of_each_world
 		display "PROGRESS ADDRESS: ",/A, DATA.progress
 		display "LAST BYTE ADDR: ",/A, prog_end

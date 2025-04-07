@@ -36,7 +36,7 @@ start:
 	
 
 	; check level completed
-	ld	a,(DATA.is_moving)
+	ld	a,(DATA.direction)
 	or	a
 	jr	z,.end
 	call	check_all_containers
@@ -50,7 +50,7 @@ start:
 
 .end:
 	xor	a
-	ld	(DATA.is_moving),a
+	ld	(DATA.direction),a
 
 	LOOP 	start
 
@@ -63,6 +63,7 @@ update:
 set_pre_positions:
 	ld	hl,DATA.LEVEL.cratesXY
 	ld	de,DATA.pre_cratesXY
+	
 	ld	bc,14
 	ldir
 	ret
@@ -74,7 +75,7 @@ return_positions:
 	ret
 
 move:
-	ld	a,(DATA.is_moving)
+	ld	a,(DATA.direction)
 	or	a
 	ret	z			; выход если не было задано движение.
 
@@ -177,7 +178,7 @@ clear_objects:
 	jp	RENDER.clear_sprite_12x12
 
 input:
-	ld	a,(DATA.is_moving)
+	ld	a,(DATA.direction)
 	or	a
 	ret	nz			; выход если движение игрока в процессе.
 	
@@ -186,14 +187,20 @@ input:
 	inc	hl
 	ld	d,(hl)
 
-	call	INPUT.pressed_left
-	jp	z,left
-	call	INPUT.pressed_right
-	jr	z,right
-	call	INPUT.pressed_up
-	jr	z,up
+	ld	c,DOWN
 	call	INPUT.pressed_down
 	jr	z,down
+	sra	c
+	call	INPUT.pressed_up
+	jr	z,up
+	sra	c
+	call	INPUT.pressed_right
+	jr	z,right
+	sra	c
+	call	INPUT.pressed_left
+	jp	z,left
+	xor	a
+	ld	(DATA.direction),a
 	ret
 right:
 	inc	e
@@ -230,8 +237,8 @@ set_player_position:
 	ld	(hl),e
 	inc	hl
 	ld	(hl),d
-	ld	a,12
-	ld	(DATA.is_moving),a
+	ld	a,c
+	ld	(DATA.direction),a
 	ret
 up:
 	dec	d

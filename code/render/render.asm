@@ -359,7 +359,7 @@ clear_sprite_12x12:
 clear_screen:
 	ld	hl,#4000
 	ld	de,#4001
-	ld	bc,6192
+	ld	bc,6143
 	ld	(hl),l
 	ldir
 	ret

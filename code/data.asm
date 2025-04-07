@@ -71,7 +71,7 @@ player_steps:
 digital_value_buffer:			
 		block	6	
 
-is_moving:
+direction:
 		db	0
 
 level_paper:
