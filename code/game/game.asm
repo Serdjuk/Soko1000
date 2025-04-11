@@ -67,14 +67,6 @@ start:
 	ei
 
 
-	; call	check_all_containers
-	; call	is_level_completed
-	; xor	a
-	; cp	b
-	; jr	nz,.end
-	; ; level completed
-	; call	UTILS.set_progress
-	; LOOP	LEVEL_SELECTION.init
 
 
 
@@ -320,7 +312,15 @@ input:
 	jr	z,BOM
 	call	INPUT.pressed_level_color
 	jp	z,change_level_color
+	call	INPUT.pressed_restart_level
+	jr	z,.restart_level
 	ret
+.restart_level:
+	; TODO - для рестарта уровня добавить окно подтверждения и очищать только игровую область.
+	pop	af
+	call	RENDER.fade_out
+	call	RENDER.clear_screen
+	LOOP	init
 BOM:
 
 

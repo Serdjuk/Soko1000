@@ -68,6 +68,13 @@ pressed_level_color:
 	cp	'C'
 	ret
 
+pressed_restart_level:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	'R'
+	ret
+
 
 keyListener:
 	call getAKey
