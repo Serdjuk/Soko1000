@@ -28,7 +28,7 @@ code: 	; 23774
 	ldir
 
 	; ld	hl,LEVEL_SELECTION.init
-	ld	hl,ANIMATIONS.init
+	ld	hl,MAIN_MENU.init
 	ld	sp,endB
 	jp	loop
 	; include	"../loop.asm"

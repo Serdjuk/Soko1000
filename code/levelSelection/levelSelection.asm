@@ -10,12 +10,18 @@ init:
 	call	draw_world_indices
 	call	draw_level_indices
 
-	call	draw_level_indices_frame
-	call	draw_world_indices_frame
-
-
 	ld	a,3
 	call	RENDER.fade_in
+
+	ld	de,#4022
+	ld	bc,4 + 12 * 256
+	ld	hl,2 + 3 * 256
+	call	RENDER.draw_frame
+	ld	de,#4029
+	ld	bc,21 + 22 * 256
+	ld	hl,2 + 3 * 256
+	call	RENDER.draw_frame
+
 	call	show_info
 	
 	ld	hl,#5800
@@ -31,9 +37,9 @@ init:
 	call	paint_world_frame_attributes
 	call	paint_level_frame_attributes
 
-
-
 .loop:
+
+	call	RENDER.growing_text
 
 	call	INPUT.pressed_space
 	call	z,swap_selection
@@ -54,11 +60,11 @@ init:
 	LOOP	.loop
 
 paint_world_frame_attributes:
-	ld	c,%00111011
+	ld	c,%00111000
 	ld	a,(DATA.is_world_selection_active)
 	or	a
 	jr	z,.l1
-	ld	c,%00000011
+	ld	c,%00001011
 .l1:	
 	ld	a,c
 	ld	hl,#5843
@@ -66,17 +72,17 @@ paint_world_frame_attributes:
 	call	RENDER.fill_attr_area
 	ld	de,VAR.world_indices_attr_addr
 	ld	a,(DATA.world_index)
-	ld	c,%00001000
+	ld	c,%00010000
 	ld	b,2
 	jp	paint_paper_line
 
 	
 paint_level_frame_attributes:
-	ld	c,%00111011
+	ld	c,%00111000
 	ld	a,(DATA.is_world_selection_active)
 	or	a
 	jr	nz,.l1
-	ld	c,%00000011
+	ld	c,%00001011
 .l1:	
 	ld	a,c	
 	ld	hl,#584A
@@ -116,7 +122,7 @@ paint_level_frame_attributes:
 	call	get_address_of_level_indices_of_each_world
 	ld	a,(hl)
 	ld	de,VAR.level_indices_attr_addr
-	ld	c,%00001000
+	ld	c,%00010000
 	ld	b,3
 	jr	paint_paper_line
 
@@ -360,106 +366,5 @@ draw_level_index_value:
 	ex	de,hl
 	jp	RENDER.draw_word
 
-draw_world_indices_frame:
-
-	ld	hl,SPRITE.frame_corner
-	ld	de,#4022
-	push	de
-	push	hl
-	push	hl
-	push	hl
-	call	RENDER.draw_symbol
-	pop	hl
-	ld	de,#4025
-	call	RENDER.draw_symbol
-	pop	hl
-	ld	de,#4882
-	call	RENDER.draw_symbol
-	pop	hl
-	ld	de,#4885
-	call	RENDER.draw_symbol
-
-	pop	de
-	inc	de
-	ld	hl,SPRITE.frame_top
-	ld	b,2
-	call	draw_char_line
-	ld	hl,SPRITE.frame_bottom
-	ld	de,#4883
-	ld	b,2
-	call	draw_char_line
-
-	ld	hl,SPRITE.frame_left
-	ld	de,#4042
-	ld	b,10
-	call	draw_char_column
-	ld	hl,SPRITE.frame_right
-	ld	de,#4045
-	ld	b,10
-	jr	draw_char_column
-
-draw_level_indices_frame:
-	ld	de,#4029
-	ld	hl, SPRITE.frame_corner
-	push	de
-	push	hl
-	push	hl
-	push	hl
-	call	RENDER.draw_symbol
-	pop	hl
-	ld	de,#403D
-	call	RENDER.draw_symbol
-	pop	hl
-	ld	de,#50C9
-	call	RENDER.draw_symbol
-	pop	hl
-	ld	de,#50DD
-	call	RENDER.draw_symbol
-	pop	de
-	inc	de
-	; top + bottom
-	ld	hl,SPRITE.frame_top
-	ld	b,19
-	call	draw_char_line
-	ld	hl,SPRITE.frame_bottom
-	ld	de,#50CA
-	ld	b,19
-	call	draw_char_line
-	; left + right
-	ld	hl,SPRITE.frame_left
-	ld	de,#4049
-	ld	b,20
-	call	draw_char_column
-	ld	hl,SPRITE.frame_right
-	ld	de,#405D
-	ld	b,20
-; + B - length
-; + HL - char address
-; + DE - start screen address
-draw_char_column:
-	push	bc
-	push	de
-	push	hl
-	call	RENDER.draw_symbol
-	pop	hl
-	pop	de
-	call	UTILS.down_de_symbol
-	pop	bc
-	djnz	draw_char_column
-	ret
-; + B - length
-; + HL - char address
-; + DE - start screen address
-draw_char_line:
-	push	bc
-	push	de
-	push	hl
-	call	RENDER.draw_symbol
-	pop	hl
-	pop	de
-	inc	e
-	pop	bc
-	djnz	draw_char_line
-	ret
 
 	endmodule

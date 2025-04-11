@@ -1,7 +1,16 @@
     	device zxspectrum48 : LABELSLIST "labList/user.l"
 
-
 	if __ERRORS__ == 0
+		struct	Object
+X:			byte
+Y:			byte
+SHIFT_BIT:		byte
+DIRECTION:		byte
+SCR_ADDR:		word
+CLEAR_SCR_ADDR:		word
+
+		ends
+		;
 		include 	"macros.asm"
 		include 	"def.asm"
 		include 	"basic.asm"
@@ -32,6 +41,7 @@ prog_start:
 		include "levelInfoScreen.asm"
 		include	"vars.asm"
 		include	"text.asm"
+		include	"authors.asm"
 
 		tapend
 prog_end:
@@ -39,7 +49,7 @@ prog_end:
 
 		include	"data.asm"	; не включать в билд, там мусор изначально.
 
-		display "Level cells: ",/A, DATA.LEVEL.cells
+		display "Level cells: ",/A, DATA.walls_layer
 		display "Shift sprites: ",/A, DATA.player_sprite_buffer
 		display "level_indices_of_each_world: ",/A, DATA.level_indices_of_each_world
 		display "PROGRESS ADDRESS: ",/A, DATA.progress

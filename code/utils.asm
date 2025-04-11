@@ -9,21 +9,18 @@ wait_any_key:
         ; jr z,$-6
         ret
 
-; + DE - positions address (X,Y).
+; + E - X
+; + D - Y
 ; + return: HL - screen address.
-; + return: A - position X
-; + DE + 2 on exit.
 get_screen_addr:
-	ld	a,(de)
-	push	af
+	ld	a,e
 	add 	low VAR.scr_offset_x
 	ld 	l,a
 	adc 	high VAR.scr_offset_x
 	sub 	l
 	ld 	h,a
 	ld	c,(hl)			; x 
-	inc	de
-	ld	a,(de)
+	ld	a,d
 	rlca
 	add 	low VAR.scr_addr_y
 	ld 	l,a
@@ -36,8 +33,26 @@ get_screen_addr:
 	ld	l,a
 	ld	b,0
 	add	hl,bc	
-	inc	de
-	pop	af
+	ret
+
+
+; + A - (Object.SHIFT_BIT)
+; + BC - sprite buffer
+; + return: HL - offset of sprite buffer
+offset_of_sprite_buffer_hl:
+	push	bc
+	ld	l,a
+	ld	h,0
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	ld	b,h
+	ld	c,l
+	add	hl,hl
+	add	hl,bc
+	pop	bc
+	add	hl,bc
 	ret
 
 ; + 	http://z80-heaven.wikidot.com/math#toc10
@@ -87,6 +102,21 @@ down_hl:
         sub 8
         ld  h,a
         ret 
+; + @bfox_zx
+up_hl:
+	ld  	a,h
+	dec 	h
+	and 	7
+	jr 	nz,$+11
+	ld  	a,l
+	add 	a,#e0
+	ld  	l,a
+	sbc 	a,a
+	and 	#08
+	add 	a,h
+	ld  	h,a
+	ret
+
 ; DE > screen address
 ; current symbol address + 8 lines (vertical)
 down_de_symbol:
@@ -166,6 +196,20 @@ sr_sprite_16x16_4_bits:
 	djnz	.loop
 	ret
 
+; + Convert screen address to attribute address
+; + DE = screen address
+; + return DE = attributes address
+scr_to_attr_de:
+	ld 	a,d
+	and 	#58
+	rrca
+	rrca
+	rrca
+	or 	#58
+	ld 	d,a
+	ret
+
+
 ; + Input: HL = number to convert, DE = location of ASCII string
 ; + Output: ASCII string at (DE)
 ; + https://map.grauw.nl/sources/external/z80bits.html#5.1
@@ -221,14 +265,29 @@ char_addr:
         add 	hl,hl
         add 	hl,hl
         add 	hl,hl
+.font_addr:
 	ld 	bc,#3D00 - 256
         add 	hl,bc       		; hl=address in font
         ret
+; + A - object index
+; + IX - objects map address
+; + return: IX - object address by index
+; + 	`dec a` вначале процедуры потому что индекса 0 не бывает на слоях. Соответственно процедуру нельзя вызывать с индексом объекта равным нулю.
+obj_addr:
+	dec	a
+	rlca
+	rlca
+	rlca
+	add	ixl
+	ld	ixl,a
+	ret
 
 ; + E - X
 ; + D - Y
-; + return: HL - map address
-map_addr:
+; + HL - cell address
+; + return: HL - cell address on layer
+cell_addr:
+	push	de
 	ld	a,d
 	rlca
 	rlca
@@ -237,8 +296,9 @@ map_addr:
 	add	e
 	ld	e,a
 	ld	d,0
-	ld	hl,DATA.LEVEL.cells
+	; ld	hl,DATA.walls_layer
 	add	hl,de
+	pop	de
 	ret
 
 ; + HL - sprite single address
@@ -279,6 +339,48 @@ multiply_sprite_16x16_to_24x16:
 	djnz	.loop
 	ret
 
+; + HL - text address
+; + DE - screen address
+; + return: HL - next text address
+growing_text_char_data_generator:
+	ld	ix,DATA.growing_text_char_addresses
+.loop:
+	ld	a,(hl)
+	or	a
+	jr	nz,.continue
+	inc	hl
+	ld	(ix),0
+	ex	de,hl
+	call	UTILS.down_hl_symbol
+	call	UTILS.up_hl
+	call	UTILS.up_hl
+	ex	de,hl
+	ld	ix,DATA.growing_text_scr_addresses
+	ld	b,AUTHORS.MAX_LENGTH
+.l2:
+	ld	(ix),e
+	ld	(ix + 1),d
+	inc	e
+	inc	ix
+	inc	ix
+	djnz	.l2
+	ld	a,b
+	ld	(DATA.growing_bit),a
+	inc	a
+	ld	(DATA.growing_text_is_animate),a
+	ret
+.continue:
+	push	hl
+	call	char_addr
+	ld	(ix),h
+	ld	(ix + 1),l
+	inc	ix
+	inc	ix
+	pop	hl
+	inc	hl
+	jr	.loop
+
+	
 ; + меняет прогресс прохождения.
 ; + устанавливает флаг о том что уровень был пройден.
 set_progress:

@@ -29,11 +29,18 @@ init:
 	ld	de,#481E
 	call	draw_one_digit
 
+
+
 	ld	a,(DATA.world_index)
 	inc	a
-	ld	de,#405E
-	call	draw_one_digit
-
+	ld	de,DATA.digital_value_buffer
+	ld	l,a
+	ld	h,0
+	push	de
+	call	UTILS.num2dec.tenths
+	pop	hl
+	ld	de,#405D
+	call	RENDER.draw_word
 
 	ld	a,(DATA.level_index)
 	inc	a

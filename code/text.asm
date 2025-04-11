@@ -8,4 +8,7 @@ text_level_label:			db	"Level",0
 
 text_swap_label:			db	"'SPACE' - SWAP",0
 text_start_label:			db	"'ENTER' - START",0
+
+text_level_authors:			db	"Level Authors",0
+text_year:				db	"2025",0
 	endmodule

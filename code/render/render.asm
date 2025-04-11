@@ -133,6 +133,18 @@ fade_out:
 	dec	a
 	ret	z
 	jr	fade_out + 2
+; + HL - screen address
+; + A - raster
+; + C - length
+fill_line:
+	dec	c
+	ld	b,0
+	push	hl
+	pop	de
+	inc	e
+	ld	(hl),a
+	ldir
+	ret
 
 ; + HL - word address
 ; + DE - screen address
@@ -158,6 +170,105 @@ draw_char:
 	pop	hl
 	ret
 
+; + DE - screen address
+; + C - width
+; + B - height
+; + L - frame color
+; + H - inner color
+draw_frame:
+	push	bc
+	push	hl
+	push	de
+	push	de
+	ld	a,c
+	dec	a
+	dec	a
+	ld	(.draw_line + 1),a
+	ld	a,b
+	dec	a
+	dec	a
+	ld	(.draw_column + 1),a
+	
+	call	.draw_corner
+	inc	e
+	ld	hl,SPRITE.frame_top
+	call	.draw_line
+	call	.draw_corner
+	call	UTILS.down_de_symbol
+	ld	hl,SPRITE.frame_right
+	call	.draw_column
+	pop	de
+	call	UTILS.down_de_symbol
+	ld	hl,SPRITE.frame_left
+	call	.draw_column
+	call	.draw_corner
+	inc	e
+	ld	hl,SPRITE.frame_bottom
+	call	.draw_line
+	call	.draw_corner
+	; attributes
+
+	pop	de
+	call	UTILS.scr_to_attr_de
+	ex	de,hl
+	pop	ix
+	ld	a,ixl
+	pop	bc
+	push	bc
+	push	hl
+	call	fill_attr_area
+	pop	hl
+	ld	bc,33
+	add	hl,bc
+	pop	bc
+	dec	c
+	dec	c
+	dec	b
+	dec	b
+	ld	a,ixh
+	jp	fill_attr_area
+
+.draw_column:
+	ld	b,0
+.l2:
+	push	bc
+	push	de
+	push	hl
+	ld	(.frame_sprite_addr + 1),hl
+	call	.draw_part
+	pop	hl
+	pop	de
+	call	UTILS.down_de_symbol
+	pop	bc
+	djnz	.l2
+	ret
+.draw_line:
+	ld	b,0
+.l1:
+	push	bc
+	push	de
+	push	hl
+	ld	(.frame_sprite_addr + 1),hl
+	call	.draw_part
+	pop	hl
+	pop	de
+	inc	e
+	pop	bc
+	djnz	.l1
+	ret
+.draw_part:
+	push	de
+.frame_sprite_addr:
+	ld	hl,0
+	call	draw_symbol
+	pop	de
+	ret
+.draw_corner:
+	ld	hl,SPRITE.frame_corner
+	ld	(.frame_sprite_addr + 1),hl
+	call	.draw_part
+	ret
+
 ; + DRAW LEVEL with all objects !!!
 draw_level:
 
@@ -170,7 +281,7 @@ draw_level:
 	; начинаем отрисовывать стены уровня.
 	ld	hl,#4000
 	ld	bc,MAX_LEVEL_SIZE + MAX_LEVEL_SIZE * 256
-	ld	ix,DATA.LEVEL.cells
+	ld	ix,DATA.walls_layer
 
 .loop:
 	xor	a
@@ -212,20 +323,10 @@ draw_level:
 	djnz	.loop
 					; draw containers
 
-	ld	a,(DATA.LEVEL.crates)
-	ld	b,a
-	ld	de,DATA.LEVEL.containersXY
-.draw_containers:
-	push	bc	
-	call	UTILS.get_screen_addr
-	push	de
-	ld	de,SPRITE.container_left
-	call	draw_object
-	pop	de
-	pop	bc
-	djnz	.draw_containers
 
 
+	; TODO - Убрать блок - нужно использовать всего 1 раз. Если коробки будут разные то сдвиг коробок нужно тут оставить.
+	;-----------------------------------------------------------------------
 	; создаем по 8 сдвинутых спрайтов для коробки и для персонажа.
 	ld	hl,SPRITE.character
 	ld	de,DATA.player_sprite_buffer
@@ -234,26 +335,53 @@ draw_level:
 	ld	hl,SPRITE.crate_v2
 	ld	de,DATA.crate_sprite_buffer
 	call	UTILS.multiply_sprite_16x16_to_24x16
+	;-----------------------------------------------------------------------
 
-					; draw crate
+
+
+
+
+	ld	ix,DATA.containers_data
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
-	ld	de,DATA.LEVEL.cratesXY
+	push	bc
+.draw_containers:
+	push	bc
+	call	screen_address_of_object
+	ld	de,SPRITE.container_left
+	call	draw_object
+	pop	bc
+	djnz	.draw_containers
+					; draw crates
+	pop	bc
+	ld	ix,DATA.crates_data
 .draw_crates:
-	push	bc	
-	call	UTILS.get_screen_addr
-	push	de
+	push	bc
+	call	screen_address_of_object
 	ld	de,DATA.crate_sprite_buffer
 	call	draw_object_24x16
-	pop	de
 	pop	bc
 	djnz	.draw_crates
-	;				draw player
-.draw_player:
-	ld	de,DATA.LEVEL.playerXY
-	call	UTILS.get_screen_addr
+					; draw player
+	ld	ix,DATA.player_data
+	call	screen_address_of_object
 	ld	de,DATA.player_sprite_buffer
 	call	draw_object_24x16
+	ret
+
+; + IX - objects data
+; + return: HL - screen address for draw object
+; + return: IX += Object.length
+; + return: A - X position
+screen_address_of_object:
+	ld	e,(ix + Object.X)
+	ld	d,(ix + Object.Y)
+	call	UTILS.get_screen_addr
+	ld	(ix + Object.SCR_ADDR),l
+	ld	(ix + Object.SCR_ADDR + 1),h
+	ld	a,e			; X position
+	ld	de,Object
+	add	ix,de
 	ret
 
 ; + DE - sprite address
@@ -340,18 +468,30 @@ draw_sprite_16x16:
 	ret
 
 ; + HL - screen address
-; + DE - clean mask			; 0b1111000000000000 || 0b0000000000001111
-clear_sprite_12x12:
-	ld	bc,#0c02
+; + DE - clean mask			
+clear_sprite_24x12:
+	ld	b,12
 .loop:
-	ld	a,(hl)
-	and	e
+
+	ld	a,(de)
+	and	(hl)
 	ld	(hl),a
 	inc	l
-	ld	a,(hl)
-	and	d
+	inc	de
+
+	ld	a,(de)
+	and	(hl)
 	ld	(hl),a
-	dec 	l
+	inc	l
+	inc	de
+
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	dec	l
+	dec	l
+	dec	de
+	dec	de
 	call	UTILS.down_hl
 	djnz	.loop
 	ret
@@ -371,6 +511,79 @@ clear_attributes:
 	ld	(hl),a
 	ldir
 	ret
+; + сначала нужно подготовить данные вызвав: DATA.growing_text_char_data_generator
+growing_text:
+	xor	a
+	ld	(DATA.growing_text_is_animate),a
+	ld	c,7
+	ld	a,(DATA.growing_bit)
+	inc	a
+	cp	8
+	jr	nz,.l1
+	ld	a,c
+.l1:
+	ld	(DATA.growing_bit),a
+	ld	b,a
+	di
+	ld	ix,DATA.growing_text_scr_addresses
+	ld	iy,DATA.growing_text_char_addresses
+.loop:
+	ld	a,(iy)
+	or	a
+	jr	z,.exit
+	ld	h,a
+	ld	a,(ix + 1)
+	ld	d,a
+	and	c
+	cp	c
+	jr	z,.cont
+	ld	a,b
+	or	a
+	jr	z,.exit
+	ld	l,(iy + 1)
+	ld	e,(ix)
+	call	draw_growing_char
+	dec	(ix + 1)
+	ld	a,b
+	ld	(DATA.growing_text_is_animate),a
+	dec	b
+	xor	a
+	cp	b
+	jr	nz,.cont
+	ld	b,0
+.cont:
+	inc	ix
+	inc	ix
+	inc	iy
+	inc	iy
+	jr	.loop
+
+.exit:
+	ld	iy,#5C3A
+	ei
+	ret
+
+
+; + HL - char addr
+; + DE - screen addr
+; + C = 7
+draw_growing_char:
+.loop:
+	push	bc
+	ld	a,(hl)
+	ld	c,a
+	rrca
+	or	c
+	ld	(de),a
+	pop	bc
+	inc	d
+	ld	a,d 
+	and	c
+	ret	z
+	inc	l
+	jr	.loop:
+	ret
+
 ; + D - color
 grid:
 	ld      hl,#5800
