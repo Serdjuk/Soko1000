@@ -88,10 +88,7 @@ growing_text_is_animate:
 		db	0
 growing_text_next_author:
 		dw	0
-
-level_paper:
-		db	0
-level_ink:	
+level_color:	
 		db	0
 ; + распакованные данные о прохождении уровней.
 progress:		block	1000	; 1000 байт на 100 уровней. Каждый байт != 0 означает что уровень был пройден.

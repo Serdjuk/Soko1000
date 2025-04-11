@@ -61,6 +61,13 @@ pressed_enter:
 	add	h
 	cp	ENTER
 	ret
+pressed_level_color:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	'C'
+	ret
+
 
 keyListener:
 	call getAKey

@@ -27,8 +27,10 @@ code: 	; 23774
 	ld	(hl),a
 	ldir
 
-	; ld	hl,LEVEL_SELECTION.init
-	ld	hl,MAIN_MENU.init
+	ld	hl,LEVEL_SELECTION.init
+	; ld	hl,MAIN_MENU.init
+	ld	a,7
+	ld	(DATA.level_color),a
 	ld	sp,endB
 	jp	loop
 	; include	"../loop.asm"

@@ -2,8 +2,8 @@
 
 init:
 
-	ld	hl,DATA.walls_layer
-	ld	de,DATA.walls_layer + 1
+	ld	hl,DATA.start_of_level_data
+	ld	de,DATA.start_of_level_data + 1
 	ld	bc,DATA.end_of_level_data - DATA.start_of_level_data - 1
 	ld	(hl),l
 	ldir
@@ -24,13 +24,17 @@ init:
 	; ldir
 
 	call	LEVEL_INFO_PANEL.init
-	ld	a,6
-	call	RENDER.fade_in
+	; ld	a,6
+	; call	RENDER.fade_in
+
+
 
 	ld	de,#4018
 	ld	bc,8 + 24 * 256
 	ld	hl,4 + %01001111 * 256
 	call	RENDER.draw_frame
+	
+	call	set_level_color
 
 start:
 
@@ -313,7 +317,10 @@ input:
 	jr	z,to_left
 
 	call	INPUT.pressed_space
-	ret	nz
+	jr	z,BOM
+	call	INPUT.pressed_level_color
+	jp	z,change_level_color
+	ret
 BOM:
 
 
@@ -677,7 +684,42 @@ to_right:
 ; 	pop	hl
 ; 	ret
 
-; return: if B == 0 level completed else not completed
+
+change_level_color:
+	ld	a,(DATA.level_color)
+	inc	a
+	and	7
+	jr	nz,.l1
+	inc	a
+.l1:
+	ld	(DATA.level_color),a
+
+set_level_color:
+	ld	hl,#5800
+	ld	d,12
+	ld	a,(DATA.level_color)
+	ld	bc,#18+#18*256
+.loop:
+	push	de
+	push	bc
+	push	hl
+	call	RENDER.paint_rect
+	pop	hl
+	ld	bc,33
+	add	hl,bc
+	pop	bc
+	dec	c
+	dec	c
+	dec	b
+	dec	b
+	pop	de
+	dec	d
+	halt
+	jr	nz,.loop
+	ret
+
+
+; + return: if B == 0 level completed else not completed
 is_level_completed:
 	ld	hl,DATA.containers_data
 	ld	a,(DATA.LEVEL.crates)

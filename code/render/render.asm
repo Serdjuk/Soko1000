@@ -12,6 +12,40 @@ draw_symbol:
 	djnz	.loop
 	ret
 
+; + HL - attribute address
+; + B - width
+; + C - height
+; + A - color
+paint_rect:
+	push	hl
+	push	bc
+	call	paint_attr_line
+	dec	l
+	ld	de,32
+	dec	c
+	call	.paint_column
+	pop	bc
+	dec	c
+	pop	hl
+	call	.paint_column
+	dec	b
+	dec	b
+	exa	
+	xor	a
+	cp	b
+	ret	z
+	exa	
+	inc	b
+	inc	l
+	jr	paint_attr_line
+
+.paint_column:
+	add	hl,de
+	ld	(hl),a
+	dec	c
+	jr	nz,.paint_column
+	ret
+
 ; + C - width
 ; + B - heihgt
 ; + A - color
@@ -32,7 +66,6 @@ fill_attr_area:
 	pop	bc
 	djnz	.loop
 	ret
-
 
 ; + A - color
 ; + B - length
