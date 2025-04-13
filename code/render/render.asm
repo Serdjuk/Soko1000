@@ -7,7 +7,7 @@ draw_symbol:
 .loop:
 	ld	a,(hl)
 	ld	(de),a
-	inc	d
+	call	UTILS.down_de
 	inc	hl
 	djnz	.loop
 	ret
@@ -178,6 +178,20 @@ fill_line:
 	ld	(hl),a
 	ldir
 	ret
+
+; + HL - word address
+; + DE - screen address
+draw_vertical_word:
+	ld	a,(hl)
+	or	a
+	ret	z
+	push	hl
+	call	UTILS.char_addr
+	call	draw_symbol
+	pop	hl
+	inc	hl
+	jr	draw_vertical_word
+
 
 ; + HL - word address
 ; + DE - screen address

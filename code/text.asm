@@ -11,4 +11,9 @@ text_start_label:			db	"'ENTER' - START",0
 
 text_level_authors:			db	"Level Authors",0
 text_year:				db	"2025",0
+
+text_level_color:			db	"Color",0
+text_level_restart:			db	"Restart",0
+text_level_select:			db	"Select",0
+text_quit:				db	"Quit",0
 	endmodule

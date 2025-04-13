@@ -20,8 +20,18 @@ init:
 	ld	de,#4839
 	call	RENDER.draw_word
 
-
-
+	ld	hl,TEXT.text_level_restart
+	ld	de,#5019
+	call	RENDER.draw_vertical_word
+	ld	hl,TEXT.text_level_color
+	ld	de,#501A
+	call	RENDER.draw_vertical_word
+	ld	hl,TEXT.text_quit
+	ld	de,#501B
+	call	RENDER.draw_vertical_word
+	ld	hl,TEXT.text_level_select
+	ld	de,#501C
+	call	RENDER.draw_vertical_word
 
 
 
