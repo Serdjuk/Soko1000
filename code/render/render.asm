@@ -407,7 +407,7 @@ draw_level:
 	push	bc
 .draw_containers:
 	push	bc
-	call	screen_address_of_object
+	call	.screen_address_of_object
 	ld	de,SPRITE.container_left
 	call	draw_object
 	pop	bc
@@ -417,14 +417,14 @@ draw_level:
 	ld	ix,DATA.crates_data
 .draw_crates:
 	push	bc
-	call	screen_address_of_object
+	call	.screen_address_of_object
 	ld	de,DATA.crate_sprite_buffer
 	call	draw_object_24x16
 	pop	bc
 	djnz	.draw_crates
 					; draw player
 	ld	ix,DATA.player_data
-	call	screen_address_of_object
+	call	.screen_address_of_object
 	ld	de,DATA.player_sprite_buffer
 	call	draw_object_24x16
 	ret
@@ -433,7 +433,7 @@ draw_level:
 ; + return: HL - screen address for draw object
 ; + return: IX += Object.length
 ; + return: A - X position
-screen_address_of_object:
+.screen_address_of_object:
 	ld	e,(ix + Object.X)
 	ld	d,(ix + Object.Y)
 	call	UTILS.get_screen_addr

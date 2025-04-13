@@ -35,9 +35,7 @@ start:
 	call	redraw_objects
 
 
-	ld	a,(DATA.animation)
-	or	a
-	call	z,is_level_completed
+	call	is_level_completed
 	ld	a,b
 	or	a
 	jr	z,level_completed
@@ -153,10 +151,83 @@ redraw_objects:
 
 	ret
 
+no_smooth:
+
+	ld	iy,DATA.clear_data
+	ld	ix,DATA.player_data
+	
+	ld	b,13
+.l1:
+	push	bc
+	ld	a,(ix + Object.DIRECTION)
+	or	a
+	call	nz,set_objects_data_for_draw.set_clear_data
+	ld	bc,Object
+	add	ix,bc
+	pop	bc
+	djnz	.l1
+	ld	(iy),#FF
+
+	ld	iy,DATA.draw_data
+	ld	ix,DATA.player_data
+	ld	bc,DATA.player_sprite_buffer
+	ld	a,(ix + Object.DIRECTION)
+	or	a
+	call	nz,.set_draw_data
+
+	ld	iy,DATA.draw_data + 4
+	ld	ix,DATA.crates_data
+	ld	b,6			; 6 коробок
+.l2:
+	push	bc
+	ld	a,(ix + Object.DIRECTION)
+	or	a
+	ld	bc,DATA.crate_sprite_buffer
+	call	nz,.set_draw_data
+	ld	bc,Object
+	add	ix,bc
+	pop	bc
+	djnz	.l2
+	ld	a,1
+	ld	(DATA.animation),a
+	ld	(iy),#FF
+	ret
+
+; + A - direction:
+.set_draw_data:
+	ld	e,(ix + Object.SHIFT_BIT)
+	cp	3
+	jr	nc,.no_shift_bit
+	ld	a,e
+	xor	4
+	ld	e,a
+	ld	(ix + Object.SHIFT_BIT),a
+.no_shift_bit:
+	ld	a,e
+	call	UTILS.offset_of_sprite_buffer_hl
+	ld	(iy + 2),l
+	ld	(iy + 3),h
+	ld	e,(ix + Object.X)
+	ld	d,(ix + Object.Y)
+	call	UTILS.get_screen_addr
+	ld	(iy),l
+	ld	(iy + 1),h
+	ld	(ix + Object.SCR_ADDR),l
+	ld	(ix + Object.SCR_ADDR + 1),h
+	ld	bc,4
+	add	iy,bc
+	ret
+.end:
+	ret
+
+
 set_objects_data_for_draw:
 	ld	a,(DATA.animation)
 	or	a
 	ret	z
+	ld	a,(DATA.smooth_motion)
+	or	a
+	jp	nz,no_smooth
 	ld	b,13
 	xor	a
 	ld	ix,DATA.player_data
@@ -177,7 +248,7 @@ set_objects_data_for_draw:
 	ld	bc,DATA.player_sprite_buffer
 	ld	a,(ix + Object.DIRECTION)
 	or	a
-	jr	z,.end
+	jr	z,.end			; FIX если контейнеры буду перерисовывать по тому же принцыпу, то этот переход не даст отрисовать контейнеры.
 	call	.set_draw_data
 
 	ld	iy,DATA.draw_data + 4
@@ -776,6 +847,10 @@ set_level_color:
 
 ; + return: if B == 0 level completed else not completed
 is_level_completed:
+	ld	a,(DATA.animation)
+	or	a
+	ld	b,1
+	ret	nz
 	ld	hl,DATA.containers_data
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
