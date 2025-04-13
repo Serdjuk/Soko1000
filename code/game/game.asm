@@ -88,6 +88,7 @@ level_completed:
 clear_directions:
 	push	bc
 	push	de
+	push	af
 	ld	b,7			; игрок + 6 коробок. 6 контейнеров не могут быть сдвинуты и не стоит им очищать направление движения.
 	xor	a
 	ld	de,Object
@@ -96,6 +97,7 @@ clear_directions:
 	ld	(hl),a
 	add	hl,de
 	djnz	.loop
+	pop	af
 	pop	de
 	pop	bc
 	ret
@@ -300,13 +302,13 @@ input:
 	jp	z,to_down
 	sra	c
 	call	INPUT.pressed_up
-	jr	z,to_up
+	jp	z,to_up
 	sra	c
 	call	INPUT.pressed_right
 	jp	z,to_right
 	sra	c
 	call	INPUT.pressed_left
-	jr	z,to_left
+	jp	z,to_left
 
 	call	INPUT.pressed_space
 	jr	z,BOM
@@ -323,43 +325,86 @@ input:
 	LOOP	init
 BOM:
 
-
-
-
-
-
-	;	TODO - как коробку заставить сделать шаг назад ?
-
-
-
-
-
-
-
-
 	ld	a,(DATA.BOM_player_direction)
-	ld	hl,.reset_BOM
-	push	hl
-	rrca	
-	ld	c,RIGHT
-	jp	c,to_right
-	rrca	
-	ld	c,LEFT
-	jr	c,to_left
-	rrca	
-	ld	c,DOWN
-	jp	c,to_down
-	rrca	
-	ld	c,UP
-	jr	c,to_up
-	pop	hl
-	ret
-.reset_BOM:
+	or	a
+	ret	z
+	ld	ix,DATA.player_data
+	ld	a,(ix + Object.DIRECTION)
+	or	a
+	ret	z
+	ld	e,(ix + Object.X)
+	ld	d,(ix + Object.Y)
+	call	.swap_direction
+	call	upgrade_obj_data + 3
+	
+	ld	bc,Object
+.next_crate:
+	add	ix,bc
+	ld	a,(ix + Object.DIRECTION)
+	or	a
+	jr	z,.next_crate
+	ld	e,(ix + Object.X)
+	ld	d,(ix + Object.Y)
+	push	de
+	call	.swap_direction
+	call	upgrade_obj_data + 3
 	xor	a
 	ld	(DATA.BOM_player_direction),a
+	pop	de
+	ld	hl,DATA.crates_layer
+	call	UTILS.cell_addr
+	ld	b,(hl)
+	ld	(hl),0
+	ld	a,(ix + Object.DIRECTION)
+	ld	de,MAX_LEVEL_SIZE
+	rrca	
+	jr	c,.left
+	rrca
+	jr	c,.right
+	rrca	
+	jr	c,.up
+	rrca	
+	jr	c,.down
 	ret
+.left:
+	dec	l
+	ld	(hl),b
+	ret
+.right:
+	inc	l
+	ld	(hl),b
+	ret
+.up:
+	or	a
+	sbc	hl,de
+	ld	(hl),b
+	ret
+.down:
+	add	hl,de
+	ld	(hl),b
+	ret
+.swap_direction:
+	cp	3
+	jr	nc,.vert
+	xor	3			; swap left|right
+	ld	c,a			; set swap direction
+	sra	a
+	sbc	0
+	add	e
+	ld	e,a
+	ret
+.vert:
+	xor	12			; swap up|down
+	ld	c,a			; set swap direction
+	sra	a
+	sra	a
+	sra	a
+	sbc	0
+	add	d
+	ld	d,a
+	ret
+
 to_left:
-	call	clear_directions
 	ld	hl,DATA.walls_layer
 	call	UTILS.cell_addr
 	dec	l			; ячейка слева
@@ -383,6 +428,7 @@ to_left:
 	ld	(hl),0
 	dec	l
 	ld	(hl),a
+	call	clear_directions
 	; обновляем данные коробки которая должна быть сдвинута
 	ld	ix,DATA.crates_data
 	dec	e
@@ -390,13 +436,14 @@ to_left:
 	call	upgrade_obj_data
 	inc	e
 	inc	e
+	jr	.upgrade + 3
 .upgrade:
+	call	clear_directions
 	dec	e
 	ld	ix,DATA.player_data
 	jr	upgrade_obj_data + 3
 
 to_up:
-	call	clear_directions
 	ld	hl,DATA.walls_layer
 	call	UTILS.cell_addr
 	ld	a,l
@@ -426,6 +473,7 @@ to_up:
 	ld	(hl),0
 	pop	hl
 	ld	(hl),a
+	call	clear_directions
 	; обновляем данные коробки которая должна быть сдвинута
 	ld	ix,DATA.crates_data
 	dec	d
@@ -433,7 +481,9 @@ to_up:
 	call	upgrade_obj_data
 	inc	d
 	inc	d
+	jr	.upgrade + 3
 .upgrade:
+	call	clear_directions
 	dec	d
 	ld	ix,DATA.player_data
 	jr	upgrade_obj_data + 3
@@ -459,7 +509,6 @@ upgrade_obj_data:
 	ld	(DATA.animation),a
 	ret
 to_down:
-	call	clear_directions
 	ld	hl,DATA.walls_layer
 	call	UTILS.cell_addr
 	
@@ -490,6 +539,7 @@ to_down:
 	ld	(hl),0
 	pop	hl
 	ld	(hl),a
+	call	clear_directions
 	; обновляем данные коробки которая должна быть сдвинута
 	ld	ix,DATA.crates_data
 	inc	d
@@ -497,13 +547,14 @@ to_down:
 	call	upgrade_obj_data
 	dec	d
 	dec	d
+	jr	.upgrade + 3
 .upgrade:
+	call	clear_directions
 	inc	d
 	ld	ix,DATA.player_data
 	jr	upgrade_obj_data + 3
 
 to_right:
-	call	clear_directions
 	ld	hl,DATA.walls_layer
 	call	UTILS.cell_addr
 	inc	l			; ячейка спереди
@@ -527,6 +578,7 @@ to_right:
 	ld	(hl),0
 	inc	l
 	ld	(hl),a
+	call	clear_directions
 	; обновляем данные коробки которая должна быть сдвинута
 	ld	ix,DATA.crates_data
 	inc	e
@@ -534,7 +586,9 @@ to_right:
 	call	upgrade_obj_data
 	dec	e
 	dec	e
+	jr	.upgrade + 3
 .upgrade:
+	call	clear_directions
 	inc	e
 	ld	ix,DATA.player_data
 	jp	upgrade_obj_data + 3

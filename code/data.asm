@@ -7,8 +7,6 @@ level_index:
 
 BOM_player_direction:
 		db	0
-BOM_crate_id:
-		db	0
 
 player_sprite_buffer:
 		block	3*16*8
