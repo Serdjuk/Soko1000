@@ -6,7 +6,7 @@ init:
 	call	RENDER.clear_attributes
 	call	RENDER.clear_screen
 
-	
+	ld	ixl,FONT_NORMAL
 	call	draw_world_indices
 	call	draw_level_indices
 
@@ -128,6 +128,7 @@ paint_level_frame_attributes:
 
 
 show_info:
+	ld	ixl,FONT_ITALIC_HALF_BOLD
 	ld	de,#50E0
 	ld	hl,TEXT.text_swap_label
 	call	RENDER.draw_word
@@ -330,6 +331,7 @@ draw_level_indices:
 	ret
 
 draw_labels:
+	ld	ixl,FONT_ITALIC_HALF_BOLD
 	ld	hl,TEXT.text_world_label
 	ld	de,#4000
 	call	RENDER.draw_word
@@ -350,6 +352,11 @@ draw_world_index_value:
 	dec	de
 	ld	hl,#4006
 	ex	de,hl
+	ld	ixl,FONT_BOLD
+	ld	a,(DATA.is_world_selection_active)
+	or	a
+	jp	z,RENDER.draw_word
+	ld	ixl,FONT_NORMAL
 	jp	RENDER.draw_word
 
 draw_level_index_value:
@@ -364,6 +371,11 @@ draw_level_index_value:
 	pop	de
 	ld	hl,#4015 + 6
 	ex	de,hl
+	ld	ixl,FONT_NORMAL
+	ld	a,(DATA.is_world_selection_active)
+	or	a
+	jp	z,RENDER.draw_word
+	ld	ixl,FONT_BOLD
 	jp	RENDER.draw_word
 
 

@@ -28,7 +28,6 @@ prog_start:
 
 		include	"loop.asm"
 		include	"render/render.asm"
-		include	"animations/animations.asm"
 		include "graphics/sprites.asm"
 		include	"game/game.asm"
 		include	"input/input.asm"

@@ -18,3 +18,7 @@ LEFT:					equ	1
 RIGHT:					equ	2
 UP:					equ	4
 DOWN:					equ	8
+
+FONT_NORMAL				equ	1
+FONT_BOLD				equ	2
+FONT_ITALIC_HALF_BOLD			equ	4

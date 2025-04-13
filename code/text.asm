@@ -14,7 +14,7 @@ text_year:				db	"2025",0
 
 text_level_menu:			db	"I-Info",0
 
-text_smooth_motion:			db	"Smooth Motion:",0
+text_smooth_motion:			db	"Smooth",0
 text_on:				db	"On",0
 text_off:				db	"Off",0
 	endmodule

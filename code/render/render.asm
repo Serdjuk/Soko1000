@@ -7,9 +7,44 @@ draw_symbol:
 .loop:
 	ld	a,(hl)
 	ld	(de),a
-	call	UTILS.down_de
+	inc	d
 	inc	hl
 	djnz	.loop
+	ret
+
+; + HL - char address
+; + DE - screen address
+draw_bold_symbol:
+	ld	b,8
+.loop:
+	ld	a,(hl)
+	rrca
+	or	(hl)
+	ld	(de),a
+	inc	d
+	inc	hl
+	djnz	.loop
+	ret
+; + HL - char address
+; + DE - screen address
+draw_italic_half_bold_symbol
+	ld	b,4
+.l1:
+	ld	a,(hl)
+	rrca
+	ld	(de),a
+	inc	d
+	inc	hl
+	djnz	.l1
+	ld	b,4
+.l2:
+	ld	a,(hl)
+	rrca
+	or	(hl)
+	ld	(de),a
+	inc	d
+	inc	hl
+	djnz	.l2
 	ret
 
 ; + HL - attribute address
@@ -208,6 +243,7 @@ fill_line:
 
 ; + HL - word address
 ; + DE - screen address
+; + IXL - font style
 draw_word:
 	ld	a,(hl)
 	or	a
@@ -224,7 +260,16 @@ draw_char:
 	push	de
 	push	bc
 	call	UTILS.char_addr
-	call	draw_symbol
+	ld	bc,.end
+	push	bc
+	ld	a,ixl
+	rrca	
+	jp	c,draw_symbol
+	rrca	
+	jp	c,draw_bold_symbol
+	pop	bc
+	call	draw_italic_half_bold_symbol
+.end:
 	pop	bc
 	pop	de
 	pop	hl
