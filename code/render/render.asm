@@ -48,6 +48,32 @@ paint_rect:
 
 ; + C - width
 ; + B - heihgt
+; + A - raster
+; + HL - screen address
+fill_scr_area:
+	dec	c
+	rlc	b
+	rlc	b
+	rlc	b
+.loop:
+	push	af
+	push	bc
+	push	hl
+	push	hl
+	ld	(hl),a
+	pop	de
+	inc	e
+	ld	b,0
+	ldir
+	pop	hl
+	call	UTILS.down_hl
+	pop	bc
+	pop	af
+	djnz	.loop
+	ret
+
+; + C - width
+; + B - heihgt
 ; + A - color
 ; + HL - attributes address
 fill_attr_area:
@@ -178,19 +204,6 @@ fill_line:
 	ld	(hl),a
 	ldir
 	ret
-
-; + HL - word address
-; + DE - screen address
-draw_vertical_word:
-	ld	a,(hl)
-	or	a
-	ret	z
-	push	hl
-	call	UTILS.char_addr
-	call	draw_symbol
-	pop	hl
-	inc	hl
-	jr	draw_vertical_word
 
 
 ; + HL - word address

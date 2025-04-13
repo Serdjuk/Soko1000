@@ -75,6 +75,13 @@ pressed_restart_level:
 	cp	'R'
 	ret
 
+pressed_level_menu:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	'I'
+	ret
+
 
 keyListener:
 	call getAKey

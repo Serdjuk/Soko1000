@@ -12,8 +12,9 @@ text_start_label:			db	"'ENTER' - START",0
 text_level_authors:			db	"Level Authors",0
 text_year:				db	"2025",0
 
-text_level_color:			db	"Color",0
-text_level_restart:			db	"Restart",0
-text_level_select:			db	"Select",0
-text_quit:				db	"Quit",0
+text_level_menu:			db	"I-Info",0
+
+text_smooth_motion:			db	"Smooth Motion:",0
+text_on:				db	"On",0
+text_off:				db	"Off",0
 	endmodule

@@ -16,16 +16,8 @@ init:
 	call	CONVERT.depack
 	call 	RENDER.draw_level
 
-	; отчистить буфер флагов определения конца уровня.
-	; ld	hl,DATA.buffer_flag_pressed
-	; ld	de,DATA.buffer_flag_pressed + 1
-	; ld	bc,5
-	; ld	(hl),0
-	; ldir
 
 	call	LEVEL_INFO_PANEL.init
-	; ld	a,6
-	; call	RENDER.fade_in
 
 
 
@@ -295,6 +287,12 @@ set_objects_data_for_draw:
 	ld	a,(ix + Object.SHIFT_BIT)
 	ret
 
+clear_play_area:
+	ld	hl,#4000
+	ld	bc,24 + 24 * 256
+	ld	a,#00
+	jp	RENDER.fill_scr_area
+
 input:
 	ld	de,(DATA.player_data)	; X,Y
 	ld	bc,DOWN + #10 * 256	; B = 16 для сдвига по игровым слоям вверх/вниз; C - directon
@@ -316,12 +314,15 @@ input:
 	jp	z,change_level_color
 	call	INPUT.pressed_restart_level
 	jr	z,.restart_level
-	ret
+	call	INPUT.pressed_level_menu
+	ret	nz
+	pop	af
+	LOOP	GAME_MENU.init
 .restart_level:
 	; TODO - для рестарта уровня добавить окно подтверждения и очищать только игровую область.
 	pop	af
 	call	RENDER.fade_out
-	call	RENDER.clear_screen
+	call	clear_play_area
 	LOOP	init
 BOM:
 
