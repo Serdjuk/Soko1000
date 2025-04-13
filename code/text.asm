@@ -14,7 +14,9 @@ text_year:				db	"2025",0
 
 text_level_menu:			db	"I-Info",0
 
+text_close:				db	"Close",0
+text_quit:				db	"Exit",0
+text_restart:				db	"Restart",0
+text_color:				db	"Color",0
 text_smooth_motion:			db	"Smooth",0
-text_on:				db	"On",0
-text_off:				db	"Off",0
 	endmodule

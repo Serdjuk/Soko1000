@@ -82,6 +82,20 @@ pressed_level_menu:
 	cp	'I'
 	ret
 
+pressed_exit:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	'E'
+	ret
+
+pressed_smooth:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	'M'
+	ret
+
 
 keyListener:
 	call getAKey

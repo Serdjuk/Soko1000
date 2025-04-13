@@ -22,3 +22,4 @@ DOWN:					equ	8
 FONT_NORMAL				equ	1
 FONT_BOLD				equ	2
 FONT_ITALIC_HALF_BOLD			equ	4
+FONT_ZEBRA				equ	8

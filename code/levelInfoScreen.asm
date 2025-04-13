@@ -1,7 +1,7 @@
 	module	LEVEL_INFO_SCREEN
 
 init:
-	ld	ixl,FONT_BOLD
+	ld	ixl,FONT_ZEBRA
 	ld	hl,100
 	ld	(DATA.timer),hl
 	ld	hl,TEXT.text_world_label

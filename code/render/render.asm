@@ -46,6 +46,27 @@ draw_italic_half_bold_symbol
 	inc	hl
 	djnz	.l2
 	ret
+zebra_style:
+	db	#0F
+; + HL - char address
+; + DE - screen address
+draw_zebra_symbol:
+	ld	a,(zebra_style)
+	ld	(.loop + 1),a
+	ld	b,4
+.loop:
+	ld	a,(hl)
+	rrca
+	ld	(de),a
+	inc	d
+	inc	hl
+	ld	a,(hl)
+	ld	(de),a
+	inc	d
+	inc	hl
+	djnz	.loop
+	ret
+
 
 ; + HL - attribute address
 ; + B - width
@@ -267,8 +288,10 @@ draw_char:
 	jp	c,draw_symbol
 	rrca	
 	jp	c,draw_bold_symbol
+	rrca
+	jp	c,draw_italic_half_bold_symbol
 	pop	bc
-	call	draw_italic_half_bold_symbol
+	call	draw_zebra_symbol
 .end:
 	pop	bc
 	pop	de

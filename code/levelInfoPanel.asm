@@ -2,7 +2,7 @@
 ; + 
 init:
 
-
+	ld	ixl,FONT_ITALIC_HALF_BOLD
 	ld	hl,TEXT.text_world_label
 	ld	de,#4039
 	call	RENDER.draw_word

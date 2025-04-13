@@ -2,7 +2,7 @@
 
 SCR_ADDR:	equ	#4082	
 WIDTH:		equ	20
-HEIGHT:		equ	14
+HEIGHT:		equ	9
 
 init:
 	ld	hl,SCR_ADDR + 33
@@ -12,7 +12,7 @@ init:
 
 	ld	de,SCR_ADDR
 	ld	bc,WIDTH + HEIGHT * 256
-	ld	hl,1 + %01111001 * 256
+	ld	hl,2 + %01111001 * 256
 	call	RENDER.draw_frame
 
 	call	print_text
@@ -35,9 +35,40 @@ exit:
 
 
 print_text:
+	ld	ixl,FONT_ITALIC_HALF_BOLD
 	ld	hl,TEXT.text_smooth_motion
-	ld	de,SCR_ADDR + 65 + WIDTH - 2 - 6
+	ld	de,SCR_ADDR + 66 + WIDTH - 4 - 6
 	call	RENDER.draw_word
+	ld	hl,TEXT.text_quit
+	ld	de,SCR_ADDR + 98 + WIDTH - 4 - 4
+	call	RENDER.draw_word
+	ld	hl,TEXT.text_restart
+	ld	de,#4804 + WIDTH - 4 - 7
+	call	RENDER.draw_word
+	ld	hl,TEXT.text_color
+	ld	de,#4804 + 32 + WIDTH - 4 - 5
+	call	RENDER.draw_word
+	ld	hl,TEXT.text_close
+	ld	de,#4804 + 32 + 32 + WIDTH - 4 - 5
+	call	RENDER.draw_word
+
+	; keys:
+	ld	ixl,FONT_BOLD
+	ld	a,'M'
+	ld	de,SCR_ADDR + 66
+	call	RENDER.draw_char
+	ld	a,'E'
+	ld	de,SCR_ADDR + 98
+	call	RENDER.draw_char
+	ld	a,'R'
+	ld	de,#4804
+	call	RENDER.draw_char
+	ld	a,'C'
+	ld	de,#4804 + 32
+	call	RENDER.draw_char
+	ld	a,'I'
+	ld	de,#4804 + 32 + 32
+	call	RENDER.draw_char
 
 
 	ret

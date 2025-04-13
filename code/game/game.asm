@@ -33,6 +33,8 @@ start:
 
 
 	call	redraw_objects
+	xor	a
+	out	(#FE),a
 
 
 	call	is_level_completed
@@ -385,6 +387,11 @@ input:
 	jp	z,change_level_color
 	call	INPUT.pressed_restart_level
 	jr	z,.restart_level
+	call	INPUT.pressed_exit
+	jr	z,.exit
+	call	INPUT.pressed_smooth
+	jr	z,.change_smooth
+
 	call	INPUT.pressed_level_menu
 	ret	nz
 	pop	af
@@ -395,6 +402,20 @@ input:
 	call	RENDER.fade_out
 	call	clear_play_area
 	LOOP	init
+.exit:
+	pop	af
+	call	RENDER.fade_out
+	call	RENDER.clear_screen
+	LOOP	MAIN_MENU.init
+
+.change_smooth:
+	ld	a,(DATA.smooth_motion)
+	xor	1
+	ld	(DATA.smooth_motion),a
+	ld	a,66
+	out	(#FE),a
+	ret
+
 BOM:
 
 	ld	a,(DATA.BOM_player_direction)
