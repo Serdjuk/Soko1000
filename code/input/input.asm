@@ -96,6 +96,13 @@ pressed_smooth:
 	cp	'M'
 	ret
 
+; + C - key char
+pressed_key:
+	call	get_both_keys
+	ret	nz
+	add	h
+	cp	c
+	ret
 
 keyListener:
 	call getAKey

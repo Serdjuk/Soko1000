@@ -46,17 +46,15 @@ draw_italic_half_bold_symbol
 	inc	hl
 	djnz	.l2
 	ret
-zebra_style:
-	db	#0F
+	
 ; + HL - char address
 ; + DE - screen address
 draw_zebra_symbol:
-	ld	a,(zebra_style)
-	ld	(.loop + 1),a
 	ld	b,4
 .loop:
 	ld	a,(hl)
 	rrca
+	or	(hl)
 	ld	(de),a
 	inc	d
 	inc	hl
@@ -710,27 +708,26 @@ draw_growing_char:
 	ret	z
 	inc	l
 	jr	.loop:
-	ret
 
 ; + D - color
-grid:
-	ld      hl,#5800
-	ld      bc,#0300
-	ld      e,%01000000
-.loop:
-	ld      a,l
-	and     #1F
-	ld      a,d
-	jr      nz,.this_line
-	xor     e
-.this_line:
-	xor     e
-	ld      d,a
-	ld      (hl),a
-	inc     hl
-	dec     bc
-	ld      a,b
-	or      c
-	ret     z
-	jr      .loop
+; grid:
+; 	ld      hl,#5800
+; 	ld      bc,#0300
+; 	ld      e,%01000000
+; .loop:
+; 	ld      a,l
+; 	and     #1F
+; 	ld      a,d
+; 	jr      nz,.this_line
+; 	xor     e
+; .this_line:
+; 	xor     e
+; 	ld      d,a
+; 	ld      (hl),a
+; 	inc     hl
+; 	dec     bc
+; 	ld      a,b
+; 	or      c
+; 	ret     z
+; 	jr      .loop
 	endmodule

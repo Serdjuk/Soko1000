@@ -31,6 +31,7 @@ code: 	; 23774
 	ld	(DATA.level_color),a
 	ld	sp,endB
 	jp	loop
+	db	"BY SERDJUK"
 	; include	"../loop.asm"
 	; jp	LEVEL_SELECTION.init
 

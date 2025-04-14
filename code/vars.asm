@@ -75,9 +75,9 @@ mm_moving_strings_frames:
 		db	0
 		db	2
 		db	4
-		db	16
 		db	18
 		db	20
+		db	22
 mm_moving_strings_scr_addrs:
 		dw	#407E
 		dw	#40BE
@@ -87,6 +87,6 @@ mm_moving_strings_scr_addrs:
 		dw	#40FE
 ; + общее окл-во кадров на всю анимацию вылетающих строк.
 mm_moves:
-		db	22
+		db	24
 
 	endmodule
