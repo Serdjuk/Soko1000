@@ -209,6 +209,18 @@ scr_to_attr_de:
 	ld 	d,a
 	ret
 
+; + Convert screen address to attribute address
+; + HL = screen address
+; + return HL = attributes address
+scr_to_attr_hl:
+	ld 	a,h
+	and 	#58
+	rrca
+	rrca
+	rrca
+	or 	#58
+	ld 	h,a
+	ret
 
 ; + Input: HL = number to convert, DE = location of ASCII string
 ; + Output: ASCII string at (DE)

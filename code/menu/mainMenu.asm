@@ -47,40 +47,105 @@ init:
 
 	; menu
 
-	ld	hl,#5870
-	ld	b,14
-	ld	a,%01110000
-	call	RENDER.paint_attr_line
-
-	ld	hl,#58B0
-	ld	b,14
-	ld	a,%01110000
-	call	RENDER.paint_attr_line
-
-	ld	hl,#58F0
-	ld	b,14
-	ld	a,%01110000
-	call	RENDER.paint_attr_line
-
-
-	ld	hl,#5930
-	ld	b,14
-	ld	a,%01110000
-	call	RENDER.paint_attr_line
-
+	ld	hl,VAR.mm_moving_strings_frames
+	ld	de,DATA.start_of_level_data
+	ld	bc,VAR.mm_moves + 1 - VAR.mm_moving_strings_frames
+	ldir
 
 
 
 .loop:
 
+	call	menu_flyout
 	ld	a,(DATA.growing_text_is_animate)
 	or	a
 	push	af
 	call	nz,RENDER.growing_text
 	pop	af
 	call	z,change_level_author_name
-
 	LOOP	.loop
+
+
+menu_flyout:
+	ld	a,(DATA.start_of_level_data + VAR.mm_moves - VAR.mm_moving_strings_frames)
+	dec	a
+	ret	m
+	ld	(DATA.start_of_level_data + VAR.mm_moves - VAR.mm_moving_strings_frames),a
+
+	ld	hl,DATA.start_of_level_data
+	ld	ix,DATA.start_of_level_data + (VAR.mm_moving_strings_scr_addrs - VAR.mm_moving_strings_frames)
+	ld	b,3
+.leading:
+	push	bc
+	push	hl
+	ld	a,(hl)
+	or	a
+	push	af
+	ld	de,fly_symbol_to_left.leading_attr
+	call	z,fly_symbol_to_left
+	pop	af
+	sub	1
+	adc	0
+	pop	hl
+	ld	(hl),a
+	inc	hl
+	inc	ix
+	inc	ix
+	pop	bc
+	djnz	.leading
+
+	ld	b,3
+.secondary:
+	push	bc
+	push	hl
+	ld	a,(hl)
+	or	a
+	push	af
+	ld	de,fly_symbol_to_left.secondary_attr
+	call	z,fly_symbol_to_left
+	pop	af
+	sub	1
+	adc	0
+	pop	hl
+	ld	(hl),a
+	inc	hl
+	inc	ix
+	inc	ix
+	pop	bc
+	djnz	.secondary
+	ret
+
+; + DE - callback address
+fly_symbol_to_left:
+	push	de
+	ld	b,8
+	ld	de,SPRITE.corner
+	ld	l,(ix)
+	ld	h,(ix + 1)
+.next_line:
+	ld	a,(de)
+	ld	(hl),a
+	inc	l
+	ld	(hl),0
+	dec	l
+	inc	h
+	inc	de
+	djnz	.next_line
+	dec	h
+	call	UTILS.scr_to_attr_hl
+	ret
+.leading_attr:
+	ld	(hl),%00000110
+	inc	l
+	ld	(hl),%00110001
+	dec	(ix)
+	ret
+.secondary_attr:
+	ld	(hl),%00110000
+	inc	l
+	ld	(hl),0
+	dec	(ix)
+	ret
 
 change_level_author_name:
 	ld	hl,AUTHORS.all

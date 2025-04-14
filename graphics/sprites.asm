@@ -51,7 +51,17 @@ frame_right:				incbin "./graphics/frame/frame_right.wbm", 4
 frame_top:				incbin "./graphics/frame/frame_up.wbm", 4
 frame_bottom:				incbin "./graphics/frame/frame_down.wbm", 4
 
-
+corner:
+					db	%11111111
+					db	%01111111
+					db	%00111111
+					db	%00011111
+					db	%00001111
+					db	%00000111
+					db	%00000011
+					db	%00000001
+					;	color
+					db	%00110000
 
 ; + маска для отчистки под спрайтом.
 clear_mask_24x16:			

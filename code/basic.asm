@@ -10,8 +10,6 @@ startLine:
 	dw 	code
 	db 	#00
 code: 	; 23774
-	xor	a
-	out	(#FE),a
 	LOAD_TAPE #4000, #1B00
 	LOAD_TAPE endB, prog_end - prog_start
 	
@@ -20,15 +18,15 @@ code: 	; 23774
 	call	RENDER.clear_attributes
 
 	xor	a
-	out	(254),a
+	out	(#FE),a
 	ld	hl,DATA.start
 	ld	de,DATA.start + 1
 	ld	bc,(DATA.end - DATA.start) - 1
 	ld	(hl),a
 	ldir
 
-	ld	hl,LEVEL_SELECTION.init
-	; ld	hl,MAIN_MENU.init
+	; ld	hl,LEVEL_SELECTION.init
+	ld	hl,MAIN_MENU.init
 	ld	a,7
 	ld	(DATA.level_color),a
 	ld	sp,endB
