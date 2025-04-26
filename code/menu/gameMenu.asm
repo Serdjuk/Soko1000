@@ -19,7 +19,8 @@ init:
 
 
 loop:
-	call	INPUT.pressed_level_menu
+	ld	c,'I'
+	call	INPUT.pressed_key
 	jr	z,exit
 
 	LOOP	loop
@@ -73,4 +74,66 @@ print_text:
 
 	ret
 
+
+; + A - confirm index: (CONFIRM_EXIT_ID, CONFIRM_RESTART_ID)
+; + HL - callback by YES
+confirmation_window:
+	push	hl
+	push	af
+	ld	hl,SCR_ADDR + 33
+	ld	bc,(WIDTH) + (HEIGHT - 2)  *256
+	xor	a
+	call	RENDER.fill_scr_area
+
+	ld	de,SCR_ADDR
+	ld	bc,WIDTH + 1 + (HEIGHT - 1) * 256
+	ld	hl,2 + %01111001 * 256
+	call	RENDER.draw_frame
+
+	ld	hl,TEXT.text_confirm_exit
+	ld	de,#40C3
+	pop	af
+	rrca
+	jr	c,.another_text
+	ld	hl,TEXT.text_confirm_restart
+	ld	de,#40C5
+.another_text:
+	ld	ixl,FONT_ITALIC_HALF_BOLD
+	call	RENDER.draw_word
+	ld	ixl,FONT_NORMAL
+	ld	hl,TEXT.text_yes
+	ld	de,#4825
+	ld	a,%01111100
+	call	paint_symbol
+	call	RENDER.draw_word
+	ld	hl,TEXT.text_no
+	ld	de,#4825 + 13
+	ld	a,%01111010
+	call	paint_symbol
+	call	RENDER.draw_word
+
+.wait:
+	ei
+	halt	
+	call	INPUT.keyListener
+	ld	c,'Y'
+	call	INPUT.pressed_key
+	ret	z
+	ld	c,'N'
+	call	INPUT.pressed_key
+	jr	z,.cancel
+	jr	.wait
+.cancel:
+	pop	hl
+	jp	exit
+; + A - color
+; + DE - screen address
+paint_symbol:
+	push	de
+	push	af
+	call	UTILS.scr_to_attr_de
+	pop	af
+	ld	(de),a
+	pop	de
+	ret
 	endmodule

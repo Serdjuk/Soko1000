@@ -23,3 +23,10 @@ FONT_NORMAL				equ	1
 FONT_BOLD				equ	2
 FONT_ITALIC_HALF_BOLD			equ	4
 FONT_ZEBRA				equ	8
+
+; + количество пунктов в главного меню		
+MAIN_MENU_ITEMS_COUNT:			equ	(VAR.selected_attr_addr.end - VAR.selected_attr_addr) / 2
+
+
+CONFIRM_EXIT_ID:			equ	1
+CONFIRM_RESTART_ID:			equ	2

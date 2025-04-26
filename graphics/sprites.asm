@@ -1,8 +1,5 @@
 	module	SPRITE
 
-wall_01_left:				incbin "./graphics/wall_01_left.wbm", 4
-wall_01_right:				incbin "./graphics/wall_01_right.wbm", 4
-
 container_left:				incbin "./graphics/container_left.wbm", 4
 container_right:			incbin "./graphics/container_right.wbm", 4
 
@@ -84,7 +81,6 @@ clear_mask_24x16:
 					db	%11111110, %00000000, %00011111
 
 
-	display "Sprites length: ",/A, $ - wall_01_left
 	endmodule
 
 

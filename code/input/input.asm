@@ -61,40 +61,6 @@ pressed_enter:
 	add	h
 	cp	ENTER
 	ret
-pressed_level_color:
-	call	get_both_keys
-	ret	nz
-	add	h
-	cp	'C'
-	ret
-
-pressed_restart_level:
-	call	get_both_keys
-	ret	nz
-	add	h
-	cp	'R'
-	ret
-
-pressed_level_menu:
-	call	get_both_keys
-	ret	nz
-	add	h
-	cp	'I'
-	ret
-
-pressed_exit:
-	call	get_both_keys
-	ret	nz
-	add	h
-	cp	'E'
-	ret
-
-pressed_smooth:
-	call	get_both_keys
-	ret	nz
-	add	h
-	cp	'M'
-	ret
 
 ; + C - key char
 pressed_key:

@@ -212,40 +212,39 @@ fade_in:
 
 fade_out:
 	ld	a,8
+.loop:
 	ei
 	halt
 	ld	hl,#5800
 	ld	bc,#0300
 	exa
-.loop:
-	ld	a,(hl)
-	and	%00111000
-	sub	1
-	jr	nc,.l1
-	xor	a
 .l1:
-	ld	e,a
 	ld	a,(hl)
 	and	%00000111
 	sub	1
-	jr	nc,.l2
-	xor	a
-.l2:
-	ld	d,a
+	adc	0
+	ld	e,a
 	ld	a,(hl)
-	and	%11000000
-	or	d
+	and	%00111000
+	rrca
+	rrca
+	rrca
+	sub	1
+	adc	0
+	rlca
+	rlca
+	rlca
 	or	e
 	ld	(hl),a
 	inc	hl
 	dec	bc
-	ld	a,c
-	or	b
-	jr	nz,.loop
+	ld	a,b
+	or	c
+	jr	nz,.l1
 	exa
 	dec	a
-	ret	z
-	jr	fade_out + 2
+	jr	nz,.loop:
+	ret
 ; + HL - screen address
 ; + A - raster
 ; + C - length
@@ -451,7 +450,6 @@ draw_level:
 
 
 
-	; TODO - Убрать блок - нужно использовать всего 1 раз. Если коробки будут разные то сдвиг коробок нужно тут оставить.
 	;-----------------------------------------------------------------------
 	; создаем по 8 сдвинутых спрайтов для коробки и для персонажа.
 	ld	hl,SPRITE.character

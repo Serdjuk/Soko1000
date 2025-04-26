@@ -18,9 +18,3 @@ SAVE_TAPE:	macro dst, length
 	scf
 	call 	#04C2
 	endm
-
-; SAVE_PROGRESS:	macro
-; 	ld	hl,#e000
-; 	ld	ix,TEXT.progress_file_name
-; 	call	#0970
-; 	endm

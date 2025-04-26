@@ -1,9 +1,9 @@
 	module	MAIN_MENU
 
+show_progress_info_timer:
+	db	150
+
 init:
-
-
-
 	ld	a,100
 	ld	(DATA.timer),a
 	ld	hl,#5AA0
@@ -22,7 +22,7 @@ init:
 	inc	(hl)
 	push	hl
 	ld	hl,TEXT.text_level_authors
-	ld	de,#50B3
+	ld	de,#50B2
 	call	RENDER.draw_word
 	pop	hl
 	dec	(hl)
@@ -52,40 +52,12 @@ init:
 	ld	bc,VAR.mm_moves + 1 - VAR.mm_moving_strings_frames
 	ldir
 
-	call	menu_frame
-
-	ld	ixl,FONT_ITALIC_HALF_BOLD
-	ld	a,'S'
-	ld	de,#4065
-	call	RENDER.draw_char
-
-	ld	a,'K'
-	ld	de,#40A7
-	call	RENDER.draw_char
-
-	ld	a,'J'
-	ld	de,#40E9
-	call	RENDER.draw_char
-
-	ld	bc,32 + 9*256
-	ld	hl,#5800
-	ld	a,%01000111
-	call	RENDER.fill_attr_area
-
-
 .loop:
 
-	ld	ixl, FONT_BOLD
-	ld	hl,TEXT.text_start_game
-	ld	de,#406A
-	call	shaking_message
-	ld	ixl, FONT_NORMAL
-	ld	hl,TEXT.text_keyboard
-	ld	de,#40AC
-	call	shaking_message
-	ld	hl,TEXT.text_kempston
-	ld	de,#40EE
-	call	shaking_message
+
+	ld	a,(DATA.start_of_level_data + VAR.mm_moves - VAR.mm_moving_strings_frames)
+	dec	a
+	call	m,redraw
 
 	call	menu_flyout
 	ld	a,(DATA.growing_text_is_animate)
@@ -95,62 +67,274 @@ init:
 	pop	af
 	call	z,change_level_author_name
 
-	;input
-	ld	c,'S'
-	call	INPUT.pressed_key
-	jr	z,start_game
 
-	ld	c,'K'
-	call	INPUT.pressed_key
-	jr	z,keyboard
+	ld	a,(DATA.start_of_level_data + VAR.mm_moves - VAR.mm_moving_strings_frames)
+	dec	a
+	call	m,input
 
-	ld	c,'J'
-	call	INPUT.pressed_key
-	jr	z,kempston
 
+	ld	a,(#5800)
+	or	a
+	jr	z,.end
+	ld	a,(show_progress_info_timer)
+	dec	a
+	jr	nz,.l1
+	call	show_progress_info
+	ld	a,150	
+.l1:
+	ld	(show_progress_info_timer),a
+
+.end:
 
 	LOOP	.loop
-start_game:
+
+input:
+	call	INPUT.pressed_up
+	jr	z,.to_up
+	call	INPUT.pressed_down
+	jr	z,.to_down
+	ld	c,ENTER
+	call	INPUT.pressed_key
+	jr	z,.select
+	ld	c,SPACE
+	call	INPUT.pressed_key
+	ret	nz
+.select:
+	ld	a,(DATA.main_menu_selected_index)
+	or	a
+	jr	nz,.next_key
+.start_game:
+	pop	af
 	LOOP 	LEVEL_SELECTION.init
-
-kempston:
-
+.next_key:
+	cp	1
+	jp	z,keyboard
+	cp	2
+	jp	z,load_progress
+	cp	3
+	jp	z,save_progress
 	ret
+.to_down:
+	ld	a,(DATA.main_menu_selected_index)
+	inc	a
+	cp	MAIN_MENU_ITEMS_COUNT
+	jr	c,.next_id
+	xor	a
+.next_id:
+	ld	(DATA.main_menu_selected_index),a
+	call	repaint
+	ret
+
+.to_up:
+	ld	a,(DATA.main_menu_selected_index)
+	sub	1
+	jr	nc,.prev_id
+	ld	a,MAIN_MENU_ITEMS_COUNT - 1
+.prev_id:
+	ld	(DATA.main_menu_selected_index),a
+	call	repaint
+	ret
+
+repaint:
+	ld	ix,VAR.selected_attr_addr
+	ld	c,0
+.loop:	
+	ld	a,(DATA.main_menu_selected_index)
+	ld	l,(ix)
+	ld	h,(ix + 1)
+	cp	c
+	call	paint
+	inc	ix
+	inc	ix
+	inc	c
+	ld	a,c
+	cp	MAIN_MENU_ITEMS_COUNT
+	ret	z
+	jr	.loop
+
+; + flag z - 
+; + HL - screen address
+paint:
+	ld	de,VAR.menu_attr_line
+	jr	nz,.no_selected
+	ld	de,VAR.menu_attr_line_selected
+.no_selected:
+	
+	ld	b,VAR.menu_attr_line.end - VAR.menu_attr_line
+.next_attr:
+	ld	a,(de)
+	ld	(hl),a
+	inc	de
+	inc	l
+	djnz	.next_attr
+	ret
+
+
+redraw:
+
+	ld	hl,VAR.main_menu_items_addr
+	ld	de,VAR.selected_attr_addr
+	ld	c,0
+.loop:
+	push	bc
+	ld	a,(de)
+	inc	de
+	push	de
+	ld	b,a
+	ld	a,(de)
+	ld	d,a
+	ld	e,b
+	inc	e
+	inc	e
+	call	UTILS.attr_to_scr_de
+	ld	a,(hl)
+	inc	hl
+	push	hl
+	ld	h,(hl)
+	ld	l,a
+	ld	ixl, FONT_NORMAL
+	ld	a,(DATA.main_menu_selected_index)
+	cp	c
+	jr	nz,.normal_font
+	ld	ixl, FONT_BOLD
+.normal_font:
+	call	shaking_message
+	pop	hl
+	inc	hl
+	pop	de
+	inc	de
+	pop	bc
+	inc	c
+	ld	a,c
+	cp	MAIN_MENU_ITEMS_COUNT
+	ret	z
+	jr	.loop
 
 keyboard:
-
+	ld	ix,TEXT.text_keyboard_qaop
+	ld	hl,VAR.qaop_keys
+	ld	de,VAR.key_binding
+	ld	a,(de)
+	cp	'Q'
+	jr	nz,.rebind_keys
+	ld	hl,VAR.wasd_keys
+	ld	ix,TEXT.text_keyboard_wasd
+.rebind_keys:
+	ld	bc,4
+	ldir
+	push	ix
+	pop	hl
+	ld	de,TEXT.text_keyboard + 9
+	ld	bc,4
+	ldir
 	ret
 
+save_progress:
+	call	UTILS.pack_progress_for_save
+	SAVE_TAPE DATA.stored_data, DATA.stored_data_end - DATA.stored_data
+	ld	a,0
+	out	(#FE),a
+	ld	hl,TEXT.text_successfully_saved
+	jr	load_progress.print
+
+load_progress:
+	LOAD_TAPE DATA.stored_data, DATA.stored_data_end - DATA.stored_data
+	call	UTILS.unpack_loaded_progress
+	ld	a,0
+	out	(#FE),a
+	ld	hl,TEXT.text_successfully_loaded
+.print:
+	push	hl
+	call	check_correctness_data
+	pop	hl
+	ld	de,#4002
+	ld	a,4
+	jr	c,.correct
+	ld	hl,TEXT.text_load_error
+	ld	de,#4000
+	ld	a,2
+.correct:
+	ld	ixl,FONT_ITALIC_HALF_BOLD
+	push	af
+	call	RENDER.draw_word
+	pop	af
+; + A - color
+show_progress_info:
+
+	ld	bc,#21 + #01 * #FF
+	ld	hl,#5800
+	jp	RENDER.fill_attr_area
+
+; + return: error if flag C is reset
+check_correctness_data:
+	ld	hl,DATA.stored_data
+	ld	b,MAX_WORLDS
+.check_indices:
+	ld	a,(hl)
+	inc	hl
+	cp	MAX_LEVELS
+	ret	nc
+	djnz	.check_indices
+	ld	a,(hl)			; level color, без проверки на 0. не может быть цвета == 0
+	cp	8
+	ret	nc
+	inc	hl
+	ld	a,(hl)			; smooth motion
+	cp	3
+	ret	nc
+	inc	hl
+	ld	a,(hl)			; world index
+	cp	MAX_WORLDS
+	ret	nc
+	inc	hl
+	ld	a,(hl)			; level index
+	cp	MAX_LEVELS
+	ret
 
 menu_frame:
 
-	ld	hl,#4747
+	ld	bc,32 + 11*256
+	ld	hl,#5800
+	ld	a,%01000111
+	call	RENDER.fill_attr_area
+
+	ld	hl,#4745
 	ld	c,18
 	ld	a,%01010101
 	call	RENDER.fill_line
-	ld	hl,#4088
+	ld	hl,#4086
 	ld	c,18
 	ld	a,%01010101
 	call	RENDER.fill_line
 
-	ld	hl,#4789
+	ld	hl,#4787
 	ld	c,18
 	ld	a,%01010101
 	call	RENDER.fill_line
-	ld	hl,#40CA
-	ld	c,18
-	ld	a,%01010101
-	call	RENDER.fill_line
-
-	ld	hl,#47CB
-	ld	c,18
-	ld	a,%01010101
-	call	RENDER.fill_line
-	ld	hl,#480C
+	ld	hl,#40C8
 	ld	c,18
 	ld	a,%01010101
 	call	RENDER.fill_line
 
+	ld	hl,#47C9
+	ld	c,18
+	ld	a,%01010101
+	call	RENDER.fill_line
+	ld	hl,#480A
+	ld	c,18
+	ld	a,%01010101
+	call	RENDER.fill_line
+
+	ld	hl,#4F0B
+	ld	c,18
+	ld	a,%01010101
+	call	RENDER.fill_line
+	ld	hl,#484C
+	ld	c,18
+	ld	a,%01010101
+	call	RENDER.fill_line
+
+	call	repaint
 	ret
 
 menu_flyout:
@@ -161,7 +345,7 @@ menu_flyout:
 
 	ld	hl,DATA.start_of_level_data
 	ld	ix,DATA.start_of_level_data + (VAR.mm_moving_strings_scr_addrs - VAR.mm_moving_strings_frames)
-	ld	b,3
+	ld	b,4
 .leading:
 	push	bc
 	push	hl
@@ -181,7 +365,7 @@ menu_flyout:
 	pop	bc
 	djnz	.leading
 
-	ld	b,3
+	ld	b,4
 .secondary:
 	push	bc
 	push	hl
@@ -200,6 +384,11 @@ menu_flyout:
 	inc	ix
 	pop	bc
 	djnz	.secondary
+	
+	ld	a,(DATA.start_of_level_data + VAR.mm_moves - VAR.mm_moving_strings_frames)
+	dec	a
+	cp	#FF
+	jp	z,menu_frame
 	ret
 
 ; + DE - callback address
@@ -222,13 +411,13 @@ fly_symbol_to_left:
 	call	UTILS.scr_to_attr_hl
 	ret
 .leading_attr:
-	ld	(hl),%00000110
+	ld	(hl),%00000001
 	inc	l
-	ld	(hl),%00110001
+	ld	(hl),%00001101
 	dec	(ix)
 	ret
 .secondary_attr:
-	ld	(hl),%00110000
+	ld	(hl),%00001000
 	inc	l
 	ld	(hl),0
 	dec	(ix)
@@ -272,12 +461,11 @@ clear_name:
 	ld	(clear_name + 2),a
 	and	7
 	ret
-
-
-
+; + flag z - печать дрожащего текста или обычного.
 ; + HL - message address
 ; + DE - screen address
 shaking_message:
+	jp	z,RENDER.draw_word
 .loop:
 	ld	a,(hl)
 	or	a

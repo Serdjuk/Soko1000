@@ -1,12 +1,21 @@
 	module VAR
 ; + 
 key_binding:				
+		db	'Q'		; up
+		db	'A'		; down
+		db	'O'		; left
+		db	'P'		; right
+
+qaop_keys:	
+		db	'Q'		; up
+		db	'A'		; down
+		db	'O'		; left
+		db	'P'		; right
+wasd_keys:
 		db	'W'		; up
 		db	'S'		; down
 		db	'A'		; left
 		db	'D'		; right
-		db	'B'		; BOM
-		db	ENTER		; action
 
 ; + Таблица смещения горизонтальных символов экрана кратных 12 пикселям.
 scr_offset_x:	
@@ -75,18 +84,51 @@ mm_moving_strings_frames:
 		db	0
 		db	2
 		db	4
+		db	6
 		db	18
 		db	20
 		db	22
+		db	24
 mm_moving_strings_scr_addrs:
 		dw	#407E
 		dw	#40BE
 		dw	#40FE
+		dw	#483E
 		dw	#407E
 		dw	#40BE
 		dw	#40FE
+		dw	#483E
 ; + общее окл-во кадров на всю анимацию вылетающих строк.
 mm_moves:
-		db	24
+		db	26
 
+; + начальные адреса атрибутов каждого пункта меню
+selected_attr_addr:
+		dw	#5865
+		dw	{selected_attr_addr} + 66
+		dw	{selected_attr_addr} + 66 * 2
+		dw	{selected_attr_addr} + 66 * 3
+.end:
+; + цвет пункта в меню
+menu_attr_line:
+		db	%00000001
+		dup	17
+		db	%00001101
+		edup
+		db	%00001000
+.end:
+; + цвет выбранного пункта в меню
+menu_attr_line_selected:
+		db	%01000111
+		dup	17
+		db	%01111001
+		edup
+		db	%01111000
+.end:
+; + адреса текста пунктов меню
+main_menu_items_addr:
+		dw	TEXT.text_start_game
+		dw	TEXT.text_keyboard
+		dw	TEXT.text_load_progress
+		dw	TEXT.text_save_progress
 	endmodule

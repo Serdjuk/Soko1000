@@ -184,7 +184,7 @@ sprite_dublication_with_4_bit_offset:
 	add	hl,bc
 	pop	bc
 	djnz	.loop
-
+	ret
 ; + shift sprite to right on 4 bits.
 ; + HL - sprite address
 sr_sprite_16x16_4_bits:
@@ -220,6 +220,29 @@ scr_to_attr_hl:
 	rrca
 	or 	#58
 	ld 	h,a
+	ret
+
+	; ld a,d
+        ; rrca
+        ; rrca
+        ; rrca
+        ; and 3
+        ; add #58
+        ; ld d,a
+
+; + #58	01011000	#40	01000000
+; + #59	01011001	#48	01001000
+; + #5A	01011010	#50	01010000
+; + DE - attribute address
+; + return DE = screen address
+attr_to_scr_de:
+	ld	a,d
+	and	#03
+	rlca
+	rlca
+	rlca
+	or	#40
+	ld	d,a
 	ret
 
 ; + Input: HL = number to convert, DE = location of ASCII string
@@ -414,10 +437,10 @@ pack_progress_for_save:
 	ld	de,DATA.compressed_progress + 1
 	ld	bc,124
 	ld	(hl),0
-	ldir
 	push	hl
-	ld	de,DATA.progress
+	ldir
 	pop	hl
+	ld	de,DATA.progress
 	ld	b,125			; кол-во байт в 1000 битах.
 .loop:
 	push	bc
@@ -439,12 +462,11 @@ pack_progress_for_save:
 	ret
 	
 unpack_loaded_progress:
-	ld	de,DATA.compressed_progress
 	ld	hl,DATA.progress
-	ld	bc,DATA.world_index * DATA.level_index		; перемнажаем 2 16 битных адреса :) нужно перемножать содержимое по этим адресам.
+	ld	de,DATA.compressed_progress
+	ld	bc,125
 .loop:
 	push	bc
-	
 	ld	bc,#0880
 .byte:
 	ld	a,(de)

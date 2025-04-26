@@ -1,10 +1,9 @@
 	module 	GAME
 
 init:
-
 	ld	hl,DATA.start_of_level_data
 	ld	de,DATA.start_of_level_data + 1
-	ld	bc,DATA.end_of_level_data - DATA.start_of_level_data - 1
+	ld	bc,(DATA.end_of_level_data - DATA.start_of_level_data) - 1
 	ld	(hl),l
 	ldir
 
@@ -16,15 +15,10 @@ init:
 	call	CONVERT.depack
 	call 	RENDER.draw_level
 
+	call 	collect_containers_data
 
 	call	LEVEL_INFO_PANEL.init
 
-
-
-	ld	de,#4018
-	ld	bc,8 + 24 * 256
-	ld	hl,4 + %01001111 * 256
-	call	RENDER.draw_frame
 	
 	call	set_level_color
 
@@ -33,6 +27,7 @@ start:
 
 
 	call	redraw_objects
+	call	draw_containers
 	xor	a
 	out	(#FE),a
 
@@ -58,11 +53,6 @@ start:
 	ld	iy,#5C3A
 	ei
 
-
-
-
-
-
 .end:
 
 	LOOP 	start
@@ -74,6 +64,68 @@ level_completed:
 	call	RENDER.fade_out
 
 	LOOP	LEVEL_SELECTION.init
+
+
+collect_containers_data:
+	ld	ix,DATA.containers_data
+	ld	hl,DATA.draw_containers_data
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+.loop:
+	push	bc
+	push	hl
+	ld	e,(ix + Object.X)
+	ld	d,(ix + Object.Y)
+	call	UTILS.get_screen_addr
+	ex	de,hl
+	pop	hl
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	inc	hl
+
+	ex	de,hl
+	ld	hl,SPRITE.container_left
+	ld	a,(ix + Object.X)
+	rrca
+	jr	nc,.l1
+	ld	bc,32
+	add	hl,bc
+.l1:
+	ex	de,hl
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	inc	hl
+	ld	bc,Object
+	add	ix,bc
+	pop	bc
+	djnz	.loop
+	ret
+
+draw_containers:
+	ld	hl,DATA.draw_containers_data
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+.loop:
+	push	bc
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	inc	hl
+	push	hl
+	ld	l,c
+	ld	h,b
+	call	RENDER.draw_sprite_16x16
+	pop	hl
+	pop	bc
+	djnz	.loop
+	ret
+
 
 ; + Очищаем направления движений всех объектов (даже не существующих) 1 игрока, 6 контейнеров и 6 коробок.
 ; + Отчистка должна происходить после анимации (после сдвига объектов на 12 пикселей)
@@ -99,7 +151,7 @@ redraw_objects:
 	or	a
 	ret	z
 	ld	hl,DATA.clear_data
-	ld	b,5			; максимум 5 на отчистку или 5 на перерисовку. 
+	ld	b,5			; максимум 5 на отчистку
 .loop:
 	ld	a,(hl)
 	cp	#FF
@@ -125,7 +177,7 @@ redraw_objects:
 	djnz	.loop
 .draw:
 	ld	hl,DATA.draw_data
-	ld	b,5			; максимум 5 на отчистку или 5 на перерисовку. 
+	ld	b,5			; максимум 5 на перерисовку. 
 .l2:
 	ld	a,(hl)
 	cp	#FF
@@ -383,16 +435,24 @@ input:
 
 	call	INPUT.pressed_space
 	jr	z,BOM
-	call	INPUT.pressed_level_color
+	ld	c,'C'
+	call	INPUT.pressed_key
 	jp	z,change_level_color
-	call	INPUT.pressed_restart_level
-	jr	z,.restart_level
-	call	INPUT.pressed_exit
-	jr	z,.exit
-	call	INPUT.pressed_smooth
+	ld	c,'R'
+	call	INPUT.pressed_key
+	ld	hl,.restart_level
+	ld	a,CONFIRM_RESTART_ID
+	jp	z,GAME_MENU.confirmation_window
+	ld	c,'E'
+	call	INPUT.pressed_key
+	ld	hl,.exit
+	ld	a,CONFIRM_EXIT_ID
+	jp	z,GAME_MENU.confirmation_window
+	ld	c,'M'
+	call	INPUT.pressed_key
 	jr	z,.change_smooth
-
-	call	INPUT.pressed_level_menu
+	ld	c,'I'
+	call	INPUT.pressed_key
 	ret	nz
 	pop	af
 	LOOP	GAME_MENU.init

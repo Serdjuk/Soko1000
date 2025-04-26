@@ -39,8 +39,6 @@ init:
 
 .loop:
 
-	call	RENDER.growing_text
-
 	call	INPUT.pressed_space
 	call	z,swap_selection
 	call	move_cursor
