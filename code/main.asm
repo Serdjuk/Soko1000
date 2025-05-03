@@ -8,7 +8,17 @@ SHIFT_BIT:		byte
 DIRECTION:		byte
 SCR_ADDR:		word
 CLEAR_SCR_ADDR:		word
+		ends
 
+		struct	Color
+BLACK:			byte
+BLUE:			byte
+RED:			byte
+MAGENTA:		byte
+GREEN:			byte
+CYAN:			byte
+YELLOW:			byte
+WHITE:			byte
 		ends
 		;
 		include 	"macros.asm"
@@ -56,7 +66,6 @@ prog_end:
 		display "LAST BYTE ADDR: ",/A, prog_end
 		display "DATA LENGTH: ",/A,DATA.end - DATA.start
 		display "FREE: ",/A, #FFFF - $
-
 
 
 	endif
