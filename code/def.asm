@@ -3,6 +3,8 @@ CS					equ	'['
 SS					equ	'/'
 SPACE					equ	' '
 
+BRIGHT:					equ	%01000000
+
 ; + максимальное количество миров.
 MAX_WORLDS:				equ	10
 ; + максимальное количество уровней в одном мире.
@@ -30,3 +32,27 @@ MAIN_MENU_ITEMS_COUNT:			equ	(VAR.selected_attr_addr.end - VAR.selected_attr_add
 
 CONFIRM_EXIT_ID:			equ	1
 CONFIRM_RESTART_ID:			equ	2
+
+
+SWL_WORLD_SCR_ADDR:			equ	#4022
+SWL_WORLD_ATTR_ADDR:			equ	#5822
+SWL_LEVEL_SCR_ADDR:			equ	#4029
+SWL_LEVEL_ATTR_ADDR:			equ	#5829
+
+SWL_WORLD_FRAME_COLOR:					equ	Color.YELLOW
+SWL_WORLD_FRAME_SELECTED_COLOR:				equ	Color.YELLOW or BRIGHT
+SWL_LEVEL_FRAME_COLOR:					equ	Color.YELLOW
+SWL_LEVEL_FRAME_SELECTED_COLOR:				equ	Color.YELLOW or BRIGHT
+
+SWL_WORLD_FIELD_COLOR:					equ	Color.BLACK or (Color.WHITE << 3) or BRIGHT
+SWL_WORLD_FIELD_SELECTED_COLOR:				equ	Color.BLACK or (Color.WHITE << 3)
+SWL_WORLD_FIELD_CURSOR_COLOR:				equ	Color.WHITE or (Color.BLUE << 3) or BRIGHT
+
+SWL_LEVEL_FIELD_SELECTED_COLOR:				equ	Color.BLACK or (Color.WHITE << 3) or BRIGHT
+SWL_LEVEL_FIELD_SELECTED_COMPLETED_COLOR:		equ	Color.GREEN or (Color.WHITE << 3) or BRIGHT
+SWL_LEVEL_FIELD_SELECTED_CURSOR_COLOR:			equ	Color.WHITE or (Color.BLUE << 3) or BRIGHT
+SWL_LEVEL_FIELD_SELECTED_CURSOR_COMPLETED_COLOR:	equ	Color.GREEN or (Color.BLUE << 3) or BRIGHT
+SWL_LEVEL_FIELD_UNSELECTED_COLOR:			equ	Color.BLACK or (Color.WHITE << 3) 
+SWL_LEVEL_FIELD_UNSELECTED_COMPLETED_COLOR:		equ	Color.GREEN or (Color.WHITE << 3)
+SWL_LEVEL_FIELD_UNSELECTED_CURSOR_COLOR:		equ	Color.WHITE or (Color.BLUE << 3) 
+SWL_LEVEL_FIELD_UNSELECTED_CURSOR_COMPLETED_COLOR:	equ	Color.GREEN or (Color.BLUE << 3) 

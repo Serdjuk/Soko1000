@@ -910,7 +910,7 @@ set_level_color:
 	push	de
 	push	bc
 	push	hl
-	call	RENDER.paint_rect
+	call	RENDER.paint_attr_rect
 	pop	hl
 	ld	bc,33
 	add	hl,bc

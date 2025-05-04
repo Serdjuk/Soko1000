@@ -65,34 +65,6 @@ draw_zebra_symbol:
 	djnz	.loop
 	ret
 
-
-; + HL - attribute address
-; + B - width
-; + C - height
-; + A - color
-paint_rect:
-	push	hl
-	push	bc
-	call	paint_attr_line
-	dec	l
-	ld	de,32
-	dec	c
-	call	.paint_column
-	pop	bc
-	dec	c
-	pop	hl
-	call	.paint_column
-	dec	b
-	dec	b
-	exa	
-	xor	a
-	cp	b
-	ret	z
-	exa	
-	inc	b
-	inc	l
-	jr	paint_attr_line
-
 .paint_column:
 	add	hl,de
 	ld	(hl),a
@@ -145,6 +117,36 @@ fill_attr_area:
 	add	hl,bc
 	pop	bc
 	djnz	.loop
+	ret
+
+; + C - width
+; + B - heihgt
+; + A - color
+; + HL - attributes address	
+paint_attr_rect:
+	push	bc
+	push	hl
+	push	bc
+	push	bc
+	ld	b,c
+	dec	b
+	call	paint_attr_line
+	pop	bc
+	dec	b
+	call	.column
+	pop	bc
+	pop	hl
+	dec	b
+	call	.column
+	pop	bc
+	ld	b,c
+	jr	paint_attr_line
+.column:
+	ld	de,32
+.col:
+	ld	(hl),a
+	add	hl,de
+	djnz	.column
 	ret
 
 ; + A - color

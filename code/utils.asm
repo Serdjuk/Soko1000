@@ -415,6 +415,16 @@ growing_text_char_data_generator:
 	inc	hl
 	jr	.loop
 
+; + return: HL - адрес начала сотни уровней выбранного мира.
+get_levels_addr_by_world:
+	ld	a,(DATA.world_index)
+	ld	e,MAX_LEVELS
+	ld	d,0
+	call	UTILS.mul_de_a
+	ld	bc,DATA.progress
+	add	hl,bc
+	ret
+
 	
 ; + меняет прогресс прохождения.
 ; + устанавливает флаг о том что уровень был пройден.
