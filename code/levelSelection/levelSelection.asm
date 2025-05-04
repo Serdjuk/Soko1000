@@ -64,23 +64,6 @@ init:
 .end:
 	LOOP	.loop
 
-; paint_world_frame_attr:
-; 	ld	hl,SWL_WORLD_ATTR_ADDR
-; 	ld	bc,4 + 12 * 256
-; .l1:
-; 	ld	e,SWL_WORLD_FRAME_SELECTED_COLOR
-; 	ld	a,(DATA.is_world_selection_active)
-; 	or	a
-; 	jr	z,.not
-; 	ld	e,SWL_WORLD_FRAME_COLOR
-; .not:
-; 	ld	a,e
-; 	jp	RENDER.paint_attr_rect
-
-; paint_level_frame_attr:
-; 	ld	hl,SWL_LEVEL_ATTR_ADDR
-; 	ld	bc,21 + 22 * 256
-; 	jr	paint_world_frame_attr.l1
 ; + раскрасить поле выбора мира
 paint_world_field_attr:
 	ld	hl,SWL_WORLD_ATTR_ADDR + 33
@@ -90,17 +73,21 @@ paint_world_field_attr:
 	ld	a,MAX_WORLDS
 	sub	c
 	ld	c,a
-	ld	e,SWL_WORLD_FIELD_COLOR
+	ld	e,SWL_WORLD_FIELD_SELECTED_COLOR
 	ld	a,(DATA.is_world_selection_active)
 	or	a
 	jr	z,.loop
-	ld	e,SWL_WORLD_FIELD_SELECTED_COLOR
+	ld	e,SWL_WORLD_FIELD_UNSELECTED_COLOR
 .loop:
 	push	bc
 	ld	a,b
 	cp	c
 	jr	nz,.not_selected
-	ld	a,SWL_WORLD_FIELD_CURSOR_COLOR
+	ld	a,(DATA.is_world_selection_active)
+	or	a
+	ld	a,SWL_WORLD_FIELD_SELECTED_CURSOR_COLOR
+	jr	z,.paint
+	ld	a,SWL_WORLD_FIELD_UNSELECTED_CURSOR_COLOR
 	jr	.paint
 .not_selected:
 	ld	a,e
