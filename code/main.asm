@@ -27,7 +27,7 @@ WHITE:			byte
 		EMPTYTAP 	build/Soko1000.tap
 		SAVETAP 	"build/Soko1000.tap", BASIC,"Soko1000", basic, endB-basic, 0
 		TAPOUT 		build/Soko1000.tap
-		incbin		"graphics/moroz1999 - Yanga (2021).scr"
+		incbin		"graphics/soko1000.scr"
 		TAPEND
 		
 		
@@ -42,6 +42,7 @@ prog_start:
 		include	"game/game.asm"
 		include	"input/input.asm"
 		include	"utils.asm"
+		include	"audio/sfxed-1.0.0-win/sdcc/beeper.z80"
 		include	"menu/mainMenu.asm"
 		include	"menu/gameMenu.asm"
 		include	"levelInfoPanel.asm"

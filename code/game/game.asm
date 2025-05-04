@@ -1,6 +1,7 @@
 	module 	GAME
 
 init:
+	call	mute
 	ld	hl,DATA.start_of_level_data
 	ld	de,DATA.start_of_level_data + 1
 	ld	bc,(DATA.end_of_level_data - DATA.start_of_level_data) - 1
@@ -32,6 +33,7 @@ start:
 	out	(#FE),a
 
 
+
 	call	is_level_completed
 	ld	a,b
 	or	a
@@ -43,7 +45,7 @@ start:
 	dec	a
 	ld	(DATA.animation),a
 .l1:
-	; check level completed
+
 	ld	a,(DATA.animation)
 	or	a
 	call	z,input
@@ -59,12 +61,12 @@ start:
 
 level_completed:
 	call	update_progress
+	call	sound_completed
 	;	play sound
 	;	confirm window
 	call	RENDER.fade_out
 
 	LOOP	LEVEL_SELECTION.init
-
 
 collect_containers_data:
 	ld	ix,DATA.containers_data
@@ -83,8 +85,9 @@ collect_containers_data:
 	inc	hl
 	ld	(hl),d
 	inc	hl
-
 	ex	de,hl
+
+.spr_addr:
 	ld	hl,SPRITE.container_left
 	ld	a,(ix + Object.X)
 	rrca
@@ -103,7 +106,21 @@ collect_containers_data:
 	djnz	.loop
 	ret
 
+container_timer:
+	db	8
 draw_containers:
+	; ld	a,(container_timer)
+	; dec	a
+	; ld	(container_timer),a
+	; cp	4
+	; ret	nc
+	; or	a
+	; jr	nz,.l1:
+
+	; ld	a,8
+	; ld	(container_timer),a
+.l1:
+
 	ld	hl,DATA.draw_containers_data
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
@@ -125,7 +142,6 @@ draw_containers:
 	pop	bc
 	djnz	.loop
 	ret
-
 
 ; + Очищаем направления движений всех объектов (даже не существующих) 1 игрока, 6 контейнеров и 6 коробок.
 ; + Отчистка должна происходить после анимации (после сдвига объектов на 12 пикселей)
@@ -453,11 +469,13 @@ input:
 .restart_level:
 	; TODO - для рестарта уровня добавить окно подтверждения и очищать только игровую область.
 	pop	af
+	call	sound_restart
 	call	RENDER.fade_out
 	call	clear_play_area
 	LOOP	init
 .exit:
 	pop	af
+	call	sound_restart
 	call	RENDER.fade_out
 	call	RENDER.clear_screen
 	LOOP	MAIN_MENU.init
@@ -471,7 +489,6 @@ input:
 	ret
 
 BOM:
-
 	ld	a,(DATA.BOM_player_direction)
 	or	a
 	ret	z
@@ -482,7 +499,12 @@ BOM:
 	ld	e,(ix + Object.X)
 	ld	d,(ix + Object.Y)
 	call	.swap_direction
-	call	upgrade_obj_data + 3
+	exx
+	exa
+	call	sound_move
+	exa
+	exx
+	call	upgrade_obj_data.uod
 	
 	ld	bc,Object
 .next_crate:
@@ -494,7 +516,7 @@ BOM:
 	ld	d,(ix + Object.Y)
 	push	de
 	call	.swap_direction
-	call	upgrade_obj_data + 3
+	call	upgrade_obj_data.uod
 	xor	a
 	ld	(DATA.BOM_player_direction),a
 	pop	de
@@ -588,7 +610,12 @@ to_left:
 	call	clear_directions
 	dec	e
 	ld	ix,DATA.player_data
-	jr	upgrade_obj_data + 3
+	exx
+	exa
+	call	sound_cursor_move
+	exa
+	exx
+	jr	upgrade_obj_data.uod
 
 to_up:
 	ld	hl,DATA.walls_layer
@@ -633,7 +660,12 @@ to_up:
 	call	clear_directions
 	dec	d
 	ld	ix,DATA.player_data
-	jr	upgrade_obj_data + 3
+	exx
+	exa
+	call	sound_cursor_move
+	exa
+	exx
+	jr	upgrade_obj_data.uod
 
 ; + A - object index
 ; + C - direction
@@ -642,6 +674,7 @@ to_up:
 ; + IX - objects map address
 upgrade_obj_data:
 	call	UTILS.obj_addr
+.uod:
 	; ld	b,0
 	ld	(ix + Object.DIRECTION),c
 	ld	a,c
@@ -654,6 +687,7 @@ upgrade_obj_data:
 	ld	(ix + Object.CLEAR_SCR_ADDR + 1),a
 	ld	a,12
 	ld	(DATA.animation),a
+	
 	ret
 to_down:
 	ld	hl,DATA.walls_layer
@@ -699,7 +733,13 @@ to_down:
 	call	clear_directions
 	inc	d
 	ld	ix,DATA.player_data
-	jr	upgrade_obj_data + 3
+	exx
+	exa
+	call	sound_cursor_move
+	exa
+	exx
+
+	jr	upgrade_obj_data.uod
 
 to_right:
 	ld	hl,DATA.walls_layer
@@ -738,7 +778,13 @@ to_right:
 	call	clear_directions
 	inc	e
 	ld	ix,DATA.player_data
-	jp	upgrade_obj_data + 3
+	exx
+	exa
+	call	sound_cursor_move
+	exa
+	exx
+
+	jp	upgrade_obj_data.uod
 
 change_level_color:
 	ld	a,(DATA.level_color)

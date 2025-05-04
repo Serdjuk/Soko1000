@@ -13,11 +13,12 @@ text_year:				db	"2025",0
 
 text_level_menu:			db	"I-Info",0
 
-text_close:				db	"Close",0
+text_space:				db	"SPACE",0
+text_bom:				db	"Back Move",0
 text_quit:				db	"Exit",0
 text_restart:				db	"Restart",0
 text_color:				db	"Color",0
-text_smooth_motion:			db	"Smooth",0
+text_smooth_motion:			db	"Smooth Move",0
 text_confirm_exit:			db	"Exit to main menu ?", 0
 text_confirm_restart:			db	"Restart level ?", 0
 text_yes:				db	"Yes", 0

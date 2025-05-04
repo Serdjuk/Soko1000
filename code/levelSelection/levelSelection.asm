@@ -53,7 +53,6 @@ init:
 	; press enter = start game
 	call	INPUT.pressed_enter
 	jr	nz,.end
-
 	call	get_address_of_level_indices_of_each_world
 	ld	a,(hl)
 	ld	(DATA.level_index),a
@@ -353,6 +352,7 @@ get_address_of_level_indices_of_each_world:
 	ret
 
 swap_selection:
+	call	sound_move
 	ld	a,(DATA.is_world_selection_active)
 	xor	1
 	ld	(DATA.is_world_selection_active),a
@@ -382,6 +382,7 @@ move_cursor:
 	xor	a
 .set_new_index:
 	ld	(DATA.world_index),a
+	call	sound_cursor_move
 	call	paint_world_field_attr
 	call	paint_level_field_attr
 	call	draw_level_index_value
@@ -432,6 +433,7 @@ change_level_index:
 	xor	a
 .set_new_index:
 	ld	(hl),a
+	call	sound_cursor_move
 	call	paint_level_field_attr
 	jp	draw_level_index_value
 	; jp	paint_level_frame_attributes

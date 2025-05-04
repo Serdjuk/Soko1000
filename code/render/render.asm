@@ -272,7 +272,35 @@ draw_word:
 	inc	e
 	inc	hl
 	jr	draw_word
+; + HL - word address
+; + DE - screen address
+; + IXL - font style
+; + IXH - font color
+draw_colored_word:
+	ld	a,(hl)
+	or	a
+	ret	z
+	call	draw_colored_char
+	inc	e
+	inc	hl
+	jr	draw_colored_word
 ; + A - char
+; + IXH - color
+; + IXL - font style
+; + DE - screen address
+draw_colored_char:
+	push	de
+	push	de
+	call	draw_char
+	pop	de
+	call	UTILS.scr_to_attr_de
+	ld	a,ixh
+	ld	(de),a
+	pop	de
+	ret
+
+; + A - char
+; + IXL - font style
 ; + DE - screen address
 draw_char:
 	; TODO - сделать динамическое изменение шрифта при печати по какому то флагу.
@@ -587,6 +615,25 @@ draw_sprite_16x16:
 	ld	a,(de)
 	or	(hl)
 	ld	(hl),a
+	dec 	l
+	inc	de
+	call	UTILS.down_hl
+	djnz	.loop
+	ret
+
+; + DE - screen address
+; + HL - sprite address
+draw_sprite_mask_16x16:
+	ld	b,#0c
+.loop:
+	ld	a,(de)
+	and	(hl)
+	ld	(de),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	and	(hl)
+	ld	(de),a
 	dec 	l
 	inc	de
 	call	UTILS.down_hl

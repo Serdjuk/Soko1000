@@ -19,24 +19,71 @@
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ; THE SOFTWARE.
 ;
-.globl _beeper_init
-.globl _beeper_queue
-.globl _beeper_play
+; .globl _beeper_init
+; .globl _beeper_queue
+; .globl _beeper_play
+
+
+s_mute:	
+	db      0,0,0,0,0
+s_completed:
+        db      1, 15, 60, 127, 2
+        db      1, 10, 40, 127, 3
+        db      1, 15, 20, 127, 0
+s_restart:
+        db      1, 15, 20, 127, 2
+        db      1, 15, 40, 127, 3
+        db      1, 8, 60, 127, 4
+        db      2, 20, 255, 70, 0
+s_key:
+	db 1,1,4,0,0
+s_move:
+        db  2,2,5,-33,0
+
+sound_completed:
+	ld      hl,s_completed
+	call    _beeper_init
+.loop:
+        ei
+        halt
+        call    _beeper_play
+        ld      a, (sfx_type)
+        or      a
+        jr     nz,.loop
+        ret
+sound_restart:
+        ld      hl,s_restart
+        call    _beeper_init
+        jr      sound_completed.loop
+mute:
+        ld      hl,s_mute
+        call    _beeper_init
+        jr      sound_completed.loop
+sound_cursor_move:
+        ld      hl,s_key
+        jr    _beeper_init
+sound_move:
+        ld      hl,s_move
+        jr    _beeper_init
+
 
 _beeper_init::
         di
         ld (sfx_data), hl
         xor a
         ld (sfx_type), a
+        ld de,sfx_type
+        ld bc,5
+        ldir
         ei
         ret
 
-_beeper_queue::
-        di
-        ld a, l
-        call queue_next
-        ei
-        ret
+; _beeper_queue::
+;         di
+;         ld a, l
+;         call queue_next
+;         ei
+;         ret
 
 queue_next:
         ld (sfx_type), a
@@ -58,7 +105,7 @@ queue_next:
         add hl, de
         add hl, bc
 
-        ld de, #sfx_type
+        ld de, sfx_type
         ld bc, #5
         ldir
         ret
@@ -83,7 +130,7 @@ _beeper_play::
 
 noise_loop:
         call rnd
-        and #0x10
+        and #10
         ; FIXME: border ?
         out (0xfe), a
 
@@ -105,7 +152,7 @@ tone:
 tone_loop:
         ; FIXME: border ?
         out (0xfe), a
-        xor #0x10
+        xor #10
 
         ld c, d
 freq_loop:
@@ -118,7 +165,7 @@ freq_loop:
 tone_done:
 noise_done:
         ld a, (sfx_next)
-        ld hl, #sfx_frames
+        ld hl, sfx_frames
         dec (hl)
         jr z, queue_next
 
@@ -130,7 +177,7 @@ noise_done:
         ret
 
 rnd:
-        ld hl, #0xf3a1
+        ld hl, #f3a1
         ld a, h
         rra
         ld a, l
@@ -155,4 +202,6 @@ sfx_freq_chg:   .ds 1
 sfx_next:       .ds 1
 
 sfx_data: .ds 2
+
+
 

@@ -1,6 +1,7 @@
 ;	HL - jump address
 loop:
 	push	hl
+	call	_beeper_play
 	ld	hl,DATA.pressed_key
 	ld	a,(hl)
 	ld	(hl),0

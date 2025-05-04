@@ -16,12 +16,14 @@ init:
 	call	RENDER.draw_frame
 
 	call	print_text
-
+	ld	a,50
+	call	UTILS.pause
 
 loop:
-	ld	c,'I'
-	call	INPUT.pressed_key
-	jr	z,exit
+	call	UTILS.wait_any_key
+	; ld	c,'I'
+	; call	INPUT.pressed_key
+	jr	nz,exit
 
 	LOOP	loop
 
@@ -38,42 +40,40 @@ exit:
 print_text:
 	ld	ixl,FONT_ITALIC_HALF_BOLD
 	ld	hl,TEXT.text_smooth_motion
-	ld	de,SCR_ADDR + 66 + WIDTH - 4 - 6
+	ld	de,SCR_ADDR + 66 + WIDTH - 4 - 11
 	call	RENDER.draw_word
-	ld	hl,TEXT.text_quit
-	ld	de,SCR_ADDR + 98 + WIDTH - 4 - 4
+	ld	hl,TEXT.text_color
+	ld	de,SCR_ADDR + 98 + WIDTH - 4 - 5
 	call	RENDER.draw_word
 	ld	hl,TEXT.text_restart
 	ld	de,#4804 + WIDTH - 4 - 7
 	call	RENDER.draw_word
-	ld	hl,TEXT.text_color
-	ld	de,#4804 + 32 + WIDTH - 4 - 5
+	ld	hl,TEXT.text_quit
+	ld	de,#4804 + 32 + WIDTH - 4 - 4
 	call	RENDER.draw_word
-	ld	hl,TEXT.text_close
-	ld	de,#4804 + 32 + 32 + WIDTH - 4 - 5
+	ld	hl,TEXT.text_bom
+	ld	de,#4804 + 32 + 32 + WIDTH - 4 - 9
 	call	RENDER.draw_word
 
 	; keys:
-	ld	ixl,FONT_BOLD
+	ld	ix,FONT_BOLD + (Color.BLACK or (Color.WHITE << 3) or BRIGHT) * 256
 	ld	a,'M'
 	ld	de,SCR_ADDR + 66
-	call	RENDER.draw_char
-	ld	a,'E'
+	call	RENDER.draw_colored_char
+	ld	a,'C'
 	ld	de,SCR_ADDR + 98
-	call	RENDER.draw_char
+	call	RENDER.draw_colored_char
 	ld	a,'R'
 	ld	de,#4804
-	call	RENDER.draw_char
-	ld	a,'C'
+	call	RENDER.draw_colored_char
+	ld	a,'E'
 	ld	de,#4804 + 32
-	call	RENDER.draw_char
-	ld	a,'I'
+	call	RENDER.draw_colored_char
+	ld	hl,TEXT.text_space
 	ld	de,#4804 + 32 + 32
-	call	RENDER.draw_char
-
+	call	RENDER.draw_colored_word
 
 	ret
-
 
 ; + A - confirm index: (CONFIRM_EXIT_ID, CONFIRM_RESTART_ID)
 ; + HL - callback by YES

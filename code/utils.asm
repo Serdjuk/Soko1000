@@ -1,4 +1,11 @@
 	module UTILS
+; + A - frames
+pause:
+	ei
+	halt
+	dec	a
+	ret	z
+	jr	pause
 
 ; + if z != 0 {pressed}
 wait_any_key:

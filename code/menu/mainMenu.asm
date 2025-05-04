@@ -100,6 +100,7 @@ input:
 	call	INPUT.pressed_key
 	ret	nz
 .select:
+	call	sound_move
 	ld	a,(DATA.main_menu_selected_index)
 	or	a
 	jr	nz,.next_key
@@ -123,6 +124,7 @@ input:
 .next_id:
 	ld	(DATA.main_menu_selected_index),a
 	call	repaint
+	call	sound_cursor_move
 	ret
 
 .to_up:
@@ -133,6 +135,7 @@ input:
 .prev_id:
 	ld	(DATA.main_menu_selected_index),a
 	call	repaint
+	call	sound_cursor_move
 	ret
 
 repaint:

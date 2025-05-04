@@ -10,13 +10,20 @@ startLine:
 	dw 	code
 	db 	#00
 code: 	; 23774
+	ld	a,%00111111
+	out	(#FE),a
+	ld	hl,#5800
+	ld	de,#5801
+	ld	bc,#02FF
+	ld	(hl),a
+	ldir
 	LOAD_TAPE #4000, #1B00
 	LOAD_TAPE endB, prog_end - prog_start
-	
-	call	RENDER.clear_screen
-	ld	a,7
-	call	RENDER.clear_attributes
-
+	ld	a,100
+	call	UTILS.pause
+.wait_any_key:
+	call	UTILS.wait_any_key
+	jr	z,.wait_any_key
 	xor	a
 	out	(#FE),a
 	ld	hl,DATA.start
@@ -24,16 +31,13 @@ code: 	; 23774
 	ld	bc,(DATA.end - DATA.start) - 1
 	ld	(hl),a
 	ldir
-
-	; ld	hl,LEVEL_SELECTION.init
-	ld	hl,MAIN_MENU.init
+	call	RENDER.fade_out
+	call	RENDER.clear_screen
 	ld	a,7
 	ld	(DATA.level_color),a
+	ld	hl,MAIN_MENU.init
 	ld	sp,endB
 	jp	loop
-	db	"BY SERDJUK"
-	; include	"../loop.asm"
-	; jp	LEVEL_SELECTION.init
 
 vars:
         db 	#0D
