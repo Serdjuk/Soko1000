@@ -427,6 +427,7 @@ draw_frame:
 ; + DRAW LEVEL with all objects !!!
 draw_level:
 
+	call	UTILS.create_container_sprites
 
 	; подготовить 2 вида стен текущего мира.
 	ld	a,(DATA.world_index)
@@ -485,7 +486,7 @@ draw_level:
 	ld	hl,SPRITE.character
 	ld	de,DATA.player_sprite_buffer
 	call	UTILS.multiply_sprite_16x16_to_24x16
-	; TODO сдлеать рандомный выбор коробок из существующих вариантов.
+	
 	ld	hl,SPRITE.crate_v2
 	ld	de,DATA.crate_sprite_buffer
 	call	UTILS.multiply_sprite_16x16_to_24x16

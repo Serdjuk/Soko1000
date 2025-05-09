@@ -1,9 +1,9 @@
 	module	SPRITE
 
 container_left:				incbin "./graphics/container/container_02_left.wbm", 4
+					incbin "./graphics/container/container_02_left_2.wbm", 4
 					incbin "./graphics/container/container_02_right.wbm", 4
 container_left_2:
-					incbin "./graphics/container/container_02_left_2.wbm", 4
 					incbin "./graphics/container/container_02_right_2.wbm", 4
 
 crate_v2:				incbin "./graphics/crates/crate_v2.wbm", 4

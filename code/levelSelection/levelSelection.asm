@@ -36,7 +36,7 @@ init:
 
 
 	ld	hl,SWL_LEVEL_ATTR_ADDR + 33
-	ld	a,5 << 3
+	ld	a,7 << 3
 	ld	bc,19 + 20 * 256
 	call	RENDER.fill_attr_area
 

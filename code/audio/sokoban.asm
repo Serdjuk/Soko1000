@@ -4,6 +4,8 @@
 	;test code
 	module	MUSIC
 
+	align 256			; жопка... плеер привязан к ровному адресу.
+
 play_music:
 	ld	(.end + 1),sp
 	ld 	hl,music_data
