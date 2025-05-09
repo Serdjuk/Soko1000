@@ -21,6 +21,7 @@ code: 	; 23774
 	LOAD_TAPE endB, prog_end - prog_start
 	ld	a,100
 	call	UTILS.pause
+	call	MUSIC.play_music
 .wait_any_key:
 	call	UTILS.wait_any_key
 	jr	z,.wait_any_key

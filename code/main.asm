@@ -53,7 +53,7 @@ prog_start:
 		include	"vars.asm"
 		include	"text.asm"
 		include	"authors.asm"
-
+		include	"audio/sokoban.asm"
 		tapend
 prog_end:
 

@@ -32,7 +32,7 @@ start:
 	xor	a
 	out	(#FE),a
 
-
+	; call	blink
 
 	call	is_level_completed
 	ld	a,b
@@ -380,6 +380,7 @@ set_objects_data_for_draw:
 .left:
 	call	.copy_scr_addr
 	dec	a
+	;dec 	a	
 	and	7
 	ld	(ix + Object.SHIFT_BIT),a
 	cp	7
@@ -403,6 +404,7 @@ set_objects_data_for_draw:
 .right:
 	call	.copy_scr_addr
 	inc	a
+	;inc	a
 	and	7
 	ld	(ix + Object.SHIFT_BIT),a
 	jr	nz,.set_scrren_and_sprite_addr
@@ -853,52 +855,6 @@ is_level_completed:
 	pop	bc
 	ret
 
-; + Проверяем все контейнеры на наличие на них ящиков.
-; check_all_containers:
-; 	ld	a,(DATA.LEVEL.crates)
-; 	ld	b,a
-; 	ld	ix,DATA.buffer_flag_pressed
-; 	ld	de,DATA.LEVEL.containersXY
-; .loop:
-; 	push	bc
-; 	push	af
-; 	ld	b,a
-; 	call	check_crate_on_container
-; 	inc	de
-; 	inc	de
-; 	pop	af
-; 	pop	bc
-; 	djnz	.loop
-; 	ret
-
-; + DE - position address of container.
-; + IX - buffer flag pressed address
-; + B - crates count
-; + return: ix + 1
-; + проверка контейнера на наличие ящика на нем.
-; check_crate_on_container:
-; 	ld	hl,DATA.LEVEL.cratesXY
-; .loop:
-; 	ld	a,(de)
-; 	cp	(hl)
-; 	inc	hl
-; 	inc	de
-; 	jr	nz,.to_next_crate
-; 	ld	a,(de)
-; 	cp	(hl)
-; 	jr	nz,.to_next_crate
-; 	dec	de
-; 	ld	(ix),1
-; 	inc	ix
-; 	ret
-; .to_next_crate:
-; 	inc	hl
-; 	dec	de
-; 	djnz	.loop
-; 	ld	(ix),0
-; 	inc	ix
-; 	ret
-
 ; + Обновляем прогресс обозначая текущий уровень в текущем мире как пройденный.
 update_progress:
 	ld	a,(DATA.world_index)
@@ -911,6 +867,26 @@ update_progress:
 	ld	bc,DATA.progress
 	add	hl,bc
 	ld	(hl),h			; значение кроме нуля обозначаает что уровень пройден.
+	ret
+
+blink_timer:
+	db	100
+blink:
+	ld	a,(blink_timer)
+	dec	a
+	ld	(blink_timer),a
+	cp	2
+	jr	z,.blink
+	or	a
+	ret	nz
+	ld	a,100
+
+	ld	(blink_timer),a
+.blink:
+	ld	hl,DATA.player_sprite_buffer + 6
+	ld	a,(hl)
+	xor	%00100000
+	ld	(hl),a
 	ret
 
 	endmodule
