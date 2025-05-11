@@ -427,8 +427,6 @@ draw_frame:
 ; + DRAW LEVEL with all objects !!!
 draw_level:
 
-	call	UTILS.create_container_sprites
-
 	; подготовить 2 вида стен текущего мира.
 	ld	a,(DATA.world_index)
 	call	UTILS.get_sprite_wall_address

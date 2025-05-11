@@ -156,56 +156,56 @@ down_hl_12:
 	ret
 	
 
-create_container_sprites:
-	ld	hl,SPRITE.container_left
-	ld	de,DATA.container_sprite_buffer
-	ld	b,2
-	call	sprite_dublication_with_4_bit_offset.loop
-	ld	hl,SPRITE.container_left
-	ld	de,DATA.container_sprite_buffer + 2*16*4
-	ld	b,2
-	push	de
-	call	sprite_dublication_with_4_bit_offset.loop
+; create_container_sprites:
+; 	ld	hl,SPRITE.container_left
+; 	ld	de,DATA.container_sprite_buffer
+; 	ld	b,2
+; 	call	sprite_dublication_with_4_bit_offset.loop
+; 	ld	hl,SPRITE.container_left
+; 	ld	de,DATA.container_sprite_buffer + 2*16*4
+; 	ld	b,2
+; 	push	de
+; 	call	sprite_dublication_with_4_bit_offset.loop
 
-	ld	a,(DATA.world_index)
-	call	get_sprite_wall_address
-	pop	de			; 4 спрайта контейнеров в которые нужно добавить половинки стен
-					; HL - wall sprite address
-	push	hl
-	call	.fill
-	pop	hl
-.fill:
-	inc	de
-	ld	b,16
-	push	hl
-.left_loop:
-	ld	c,(hl)
-	sra	c
-	sra	c
-	sra	c
-	sra	c
-	ld	a,(de)
-	or	c
-	ld	(de),a
-	inc	hl
-	inc	hl
-	inc	de
-	inc	de
-	djnz	.left_loop
-	pop	hl
-	inc	hl
-	dec	de
-	ld	b,16
-.right_loop:
-	ld	a,(de)
-	or	(hl)
-	ld	(de),a
-	inc	hl
-	inc	hl
-	inc	de
-	inc	de
-	djnz	.right_loop
-	ret
+; 	ld	a,(DATA.world_index)
+; 	call	get_sprite_wall_address
+; 	pop	de			; 4 спрайта контейнеров в которые нужно добавить половинки стен
+; 					; HL - wall sprite address
+; 	push	hl
+; 	call	.fill
+; 	pop	hl
+; .fill:
+; 	inc	de
+; 	ld	b,16
+; 	push	hl
+; .left_loop:
+; 	ld	c,(hl)
+; 	sra	c
+; 	sra	c
+; 	sra	c
+; 	sra	c
+; 	ld	a,(de)
+; 	or	c
+; 	ld	(de),a
+; 	inc	hl
+; 	inc	hl
+; 	inc	de
+; 	inc	de
+; 	djnz	.left_loop
+; 	pop	hl
+; 	inc	hl
+; 	dec	de
+; 	ld	b,16
+; .right_loop:
+; 	ld	a,(de)
+; 	or	(hl)
+; 	ld	(de),a
+; 	inc	hl
+; 	inc	hl
+; 	inc	de
+; 	inc	de
+; 	djnz	.right_loop
+; 	ret
 
 ; + A - world index
 ; + Получаем адрес спрайта шаблона стены который будет использоваться в текущем мире.
@@ -378,7 +378,7 @@ obj_addr:
 
 ; + E - X
 ; + D - Y
-; + HL - cell address
+; + HL - cells address
 ; + return: HL - cell address on layer
 cell_addr:
 	push	de
