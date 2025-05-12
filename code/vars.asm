@@ -131,4 +131,5 @@ main_menu_items_addr:
 		dw	TEXT.text_keyboard
 		dw	TEXT.text_load_progress
 		dw	TEXT.text_save_progress
+
 	endmodule

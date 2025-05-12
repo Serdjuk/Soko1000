@@ -17,6 +17,7 @@ init:
 	call 	RENDER.draw_level
 
 	call 	collect_containers_data
+	call 	collect_clear_containers_data
 
 	call	LEVEL_INFO_PANEL.init
 
@@ -25,12 +26,19 @@ init:
 
 start:
 
-
-
+	ld	a,1
+	out	(#FE),a
+	call	clear_containers
+	ld	a,2
+	out	(#FE),a
 	call	redraw_objects
+	ld	a,1
+	out	(#FE),a
 	call	draw_containers
 	xor	a
 	out	(#FE),a
+
+
 
 	; call	blink
 
@@ -104,24 +112,80 @@ collect_containers_data:
 	add	ix,bc
 	pop	bc
 	djnz	.loop
+	;	for container animation
+	ld	hl,DATA.draw_containers_data
+	ld	de,DATA.draw_containers_data_v2
+	ld	bc,4 * MAX_CRATES
+	ldir
+	ld	de,64
+	ld	ix,DATA.draw_containers_data_v2
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+.copy_for_animation:
+	ld	l,(ix + 2)
+	ld	h,(ix + 3)
+	add	hl,de
+	ld	(ix + 2),l
+	ld	(ix + 3),h
+	inc	ix
+	inc	ix
+	inc	ix
+	inc	ix
+	djnz	.copy_for_animation
 	ret
 
-container_timer:
-	db	8
-draw_containers:
-	; ld	a,(container_timer)
-	; dec	a
-	; ld	(container_timer),a
-	; cp	4
-	; ret	nc
-	; or	a
-	; jr	nz,.l1:
+collect_clear_containers_data:
+	ld	ix,DATA.containers_data
+	ld	hl,DATA.clear_containers_data
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+.loop:
+	push	bc
+	push	hl
+	ld	e,(ix + Object.X)
+	ld	d,(ix + Object.Y)
+	call	UTILS.get_screen_addr
+	ex	de,hl
+	pop	hl
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	inc	hl
+	ex	de,hl
 
-	; ld	a,8
-	; ld	(container_timer),a
+.spr_addr:
+	ld	hl,SPRITE.container_clear_sprite
+	ld	a,(ix + Object.X)
+	rrca
+	jr	nc,.l1
+	ld	bc,32
+	add	hl,bc
 .l1:
+	ex	de,hl
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	inc	hl
+	ld	bc,Object
+	add	ix,bc
+	pop	bc
+	djnz	.loop
+	ret
 
+container_ainmation_timer:
+	db	CONTAINER_ANIMATION_FRAMES
+draw_containers:
 	ld	hl,DATA.draw_containers_data
+	ld	a,(container_ainmation_timer)
+	dec	a
+	cp	CONTAINER_ANIMATION_FRAMES / 2
+	jr	nc,.l1
+	or	a
+	ld	hl,DATA.draw_containers_data_v2
+	jr	nz,.l1
+	ld	a,CONTAINER_ANIMATION_FRAMES
+.l1:
+	ld	(container_ainmation_timer),a
 	ld	a,(DATA.LEVEL.crates)
 	ld	b,a
 .loop:
@@ -137,11 +201,35 @@ draw_containers:
 	push	hl
 	ld	l,c
 	ld	h,b
-	call	RENDER.draw_sprite_16x16
+	call	RENDER.draw_sprite_16x12
 	pop	hl
 	pop	bc
 	djnz	.loop
 	ret
+
+clear_containers:
+	ld	hl,DATA.clear_containers_data
+	ld	a,(DATA.LEVEL.crates)
+	ld	b,a
+.loop:
+	push	bc
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	inc	hl
+	push	hl
+	ld	l,c
+	ld	h,b
+	call	RENDER.clear_sprite_16x12
+	pop	hl
+	pop	bc
+	djnz	.loop
+	ret
+
 
 ; + Очищаем направления движений всех объектов (даже не существующих) 1 игрока, 6 контейнеров и 6 коробок.
 ; + Отчистка должна происходить после анимации (после сдвига объектов на 12 пикселей)
@@ -869,24 +957,24 @@ update_progress:
 	ld	(hl),h			; значение кроме нуля обозначаает что уровень пройден.
 	ret
 
-blink_timer:
-	db	100
-blink:
-	ld	a,(blink_timer)
-	dec	a
-	ld	(blink_timer),a
-	cp	2
-	jr	z,.blink
-	or	a
-	ret	nz
-	ld	a,100
+; blink_timer:
+; 	db	100
+; blink:
+; 	ld	a,(blink_timer)
+; 	dec	a
+; 	ld	(blink_timer),a
+; 	cp	2
+; 	jr	z,.blink
+; 	or	a
+; 	ret	nz
+; 	ld	a,100
 
-	ld	(blink_timer),a
-.blink:
-	ld	hl,DATA.player_sprite_buffer + 6
-	ld	a,(hl)
-	xor	%00100000
-	ld	(hl),a
-	ret
+; 	ld	(blink_timer),a
+; .blink:
+; 	ld	hl,DATA.player_sprite_buffer + 6
+; 	ld	a,(hl)
+; 	xor	%00100000
+; 	ld	(hl),a
+; 	ret
 
 	endmodule

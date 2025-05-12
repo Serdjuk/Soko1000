@@ -595,7 +595,7 @@ draw_wall:
 ; + A - position X
 draw_object:
 	rrca
-	jr	nc,draw_sprite_16x16
+	jr	nc,draw_sprite_16x12
 	ex	de,hl
 	ld	bc,32
 	add	hl,bc
@@ -603,8 +603,8 @@ draw_object:
 
 ; + HL - screen address
 ; + DE - sprite address
-draw_sprite_16x16:
-	ld	b,#0c
+draw_sprite_16x12:
+	ld	b,3
 .loop:
 	ld	a,(de)
 	or	(hl)
@@ -615,29 +615,67 @@ draw_sprite_16x16:
 	or	(hl)
 	ld	(hl),a
 	dec 	l
+	inc	h
 	inc	de
+
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	dec 	l
+	inc	h
+	inc	de
+
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	dec 	l
+	inc	h
+	inc	de
+
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	or	(hl)
+	ld	(hl),a
+	dec 	l
+	inc	de
+
 	call	UTILS.down_hl
 	djnz	.loop
 	ret
+	
 
 ; + DE - screen address
 ; + HL - sprite address
-draw_sprite_mask_16x16:
-	ld	b,#0c
-.loop:
-	ld	a,(de)
-	and	(hl)
-	ld	(de),a
-	inc	l
-	inc	de
-	ld	a,(de)
-	and	(hl)
-	ld	(de),a
-	dec 	l
-	inc	de
-	call	UTILS.down_hl
-	djnz	.loop
-	ret
+; draw_sprite_mask_16x16:
+; 	ld	b,#0c
+; .loop:
+; 	ld	a,(de)
+; 	and	(hl)
+; 	ld	(de),a
+; 	inc	l
+; 	inc	de
+; 	ld	a,(de)
+; 	and	(hl)
+; 	ld	(de),a
+; 	dec 	l
+; 	inc	de
+; 	call	UTILS.down_hl
+; 	djnz	.loop
+; 	ret
 
 ; + HL - screen address
 ; + DE - clean mask			
@@ -664,6 +702,64 @@ clear_sprite_24x12:
 	dec	l
 	dec	de
 	dec	de
+	call	UTILS.down_hl
+	djnz	.loop
+	ret
+
+
+; + HL - screen address
+; + DE - clean mask			
+clear_sprite_16x12:
+	ld	b,3
+.loop:
+
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	dec	l
+	inc	h
+	inc	de
+
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	dec	l
+	inc	h
+	inc	de
+
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	dec	l
+	inc	h
+	inc	de
+
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	inc	l
+	inc	de
+	ld	a,(de)
+	and	(hl)
+	ld	(hl),a
+	dec	l
+	inc	de
+
 	call	UTILS.down_hl
 	djnz	.loop
 	ret

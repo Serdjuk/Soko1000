@@ -6,6 +6,11 @@ container_left_2:
 					incbin "./graphics/container/container_02_left_2.wbm", 4
 					incbin "./graphics/container/container_02_right_2.wbm", 4
 
+container_clear_sprite:
+					incbin "./graphics/container/container_01_left_clear_rect.wbm", 4
+					incbin "./graphics/container/container_01_right_clear_rect.wbm", 4
+
+
 crate_v2:				incbin "./graphics/crates/crate_v2.wbm", 4
 
 wall_01_v1:				incbin	"./graphics/walls/wall_01_v1.wbm", 4
