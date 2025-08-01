@@ -4,6 +4,12 @@ LOOP:	macro	adr
 	endm
 
 LOAD_TAPE:	macro dst, length
+	ld	(Errlod+1),sp
+Errlod:
+	ld	de,#0000
+	dec	de
+	dec	de
+	ld	(#5C3D),de
 	ld 	ix,dst
 	ld 	de,length
 	ld 	a,#FF
@@ -12,6 +18,12 @@ LOAD_TAPE:	macro dst, length
 	endm
 
 SAVE_TAPE:	macro dst, length
+	ld	(Errsav+1),sp
+Errsav:
+	ld	de,#0000
+	dec	de
+	dec	de
+	ld	(#5C3D),de
 	ld 	ix,dst
 	ld 	de,length
 	ld 	a,#FF
