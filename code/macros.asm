@@ -5,7 +5,8 @@ LOOP:	macro	adr
 
 LOAD_TAPE:	macro dst, length
 	ld	(errldr+1),sp
-errldr	ld	de,#0000
+.errldr:
+	ld	de,#0000
 	dec	de
 	dec	de
 	ld	(#5C3D),de
@@ -18,7 +19,8 @@ errldr	ld	de,#0000
 
 SAVE_TAPE:	macro dst, length
 	ld	(errsav+1),sp
-errsav	ld	de,#0000
+.errsav:
+	ld	de,#0000
 	dec	de
 	dec	de
 	ld	(#5C3D),de
