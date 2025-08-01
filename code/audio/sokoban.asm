@@ -285,7 +285,7 @@ noise_mode=$
 	sbc a,a						;4
 
 	or b						;4		mix sample
-	
+	;or 7;         7
 	out (#fe),a					;11
 		
 	exx							;4

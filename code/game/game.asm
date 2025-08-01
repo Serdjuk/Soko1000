@@ -26,17 +26,17 @@ init:
 
 start:
 
-	ld	a,1
-	out	(#FE),a
+	; ld	a,1
+	; out	(#FE),a
 	call	clear_containers
-	ld	a,2
-	out	(#FE),a
+	; ld	a,2
+	; out	(#FE),a
 	call	redraw_objects
-	ld	a,1
-	out	(#FE),a
+	; ld	a,1
+	; out	(#FE),a
 	call	draw_containers
-	xor	a
-	out	(#FE),a
+	; xor	a
+	; out	(#FE),a
 
 
 
@@ -70,12 +70,23 @@ start:
 level_completed:
 	call	update_progress
 	call	sound_completed
-	;	play sound
-	;	confirm window
 	call	RENDER.fade_out
-
+	call	UTILS.is_game_done
+	jr 	nz,game_done
 	LOOP	LEVEL_SELECTION.init
+game_done:
+	LOOP	CONGRATULATIONS.init
 
+
+; TODO усложнить. анимация спрайта через 1 конетйнер
+; контейнер_0 = sprite v1
+; контейнер_1 = sprite v2
+; контейнер_2 = sprite v1
+; ....
+; вариант 2 (сложнее):
+; 	Учитывать расположение всех соседних контейнеров, что бы анимации двух рядом стоящих контейнеров не были ОБА v1 или ОБА v2
+; 	
+; 	
 collect_containers_data:
 	ld	ix,DATA.containers_data
 	ld	hl,DATA.draw_containers_data
@@ -574,8 +585,6 @@ input:
 	ld	a,(DATA.smooth_motion)
 	xor	1
 	ld	(DATA.smooth_motion),a
-	ld	a,66
-	out	(#FE),a
 	ret
 
 BOM:

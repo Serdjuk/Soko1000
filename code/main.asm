@@ -54,6 +54,11 @@ prog_start:
 		include	"text.asm"
 		include	"authors.asm"
 		include	"audio/sokoban.asm"
+		include	"game/congratulations.asm"
+done_frame1:
+		incbin	"graphics/done_frame1.atr"
+done_frame2:
+		incbin	"graphics/done_frame2.atr"
 		tapend
 prog_end:
 

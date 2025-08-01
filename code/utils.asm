@@ -552,4 +552,19 @@ unpack_loaded_progress:
 	ret	z
 	jr	.loop
 
+; + return: reset Z flag as game done
+is_game_done:
+	ld	hl,DATA.progress
+	ld	bc,1000
+.loop:
+	ld	a,(hl)
+	inc	hl
+	or	a
+	ret	z
+	dec	bc
+	ld	a,b
+	or	c
+	jr	nz,.loop
+	sbc	h
+	ret
 	endmodule
