@@ -103,12 +103,12 @@ confirmation_window:
 	ld	ixl,FONT_NORMAL
 	ld	hl,TEXT.text_yes
 	ld	de,#4825
-	ld	a,%01111100
+	ld	a,%01111010
 	call	paint_symbol
 	call	RENDER.draw_word
 	ld	hl,TEXT.text_no
 	ld	de,#4825 + 13
-	ld	a,%01111010
+	ld	a,%01111100
 	call	paint_symbol
 	call	RENDER.draw_word
 

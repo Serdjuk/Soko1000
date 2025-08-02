@@ -568,7 +568,6 @@ input:
 	pop	af
 	LOOP	GAME_MENU.init
 .restart_level:
-	; TODO - для рестарта уровня добавить окно подтверждения и очищать только игровую область.
 	pop	af
 	call	sound_restart
 	call	RENDER.fade_out
@@ -965,25 +964,5 @@ update_progress:
 	add	hl,bc
 	ld	(hl),h			; значение кроме нуля обозначаает что уровень пройден.
 	ret
-
-; blink_timer:
-; 	db	100
-; blink:
-; 	ld	a,(blink_timer)
-; 	dec	a
-; 	ld	(blink_timer),a
-; 	cp	2
-; 	jr	z,.blink
-; 	or	a
-; 	ret	nz
-; 	ld	a,100
-
-; 	ld	(blink_timer),a
-; .blink:
-; 	ld	hl,DATA.player_sprite_buffer + 6
-; 	ld	a,(hl)
-; 	xor	%00100000
-; 	ld	(hl),a
-; 	ret
 
 	endmodule

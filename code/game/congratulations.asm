@@ -9,7 +9,6 @@ duration:
 
 init:
 	xor	a
-	; jr	$
 	call	RENDER.clear_attributes
 	call	grid
 launch:
