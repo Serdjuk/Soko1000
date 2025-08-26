@@ -26,8 +26,6 @@ timer:
 main_menu_selected_index:
 		db	0
 
-		; 	1 - 76 - не проходимый (2 ящика)
-
 			align	256
 start_of_level_data:
 walls_layer:				block 	256		; слой стен.
@@ -88,6 +86,10 @@ growing_text_is_animate:
 		db	0
 growing_text_next_author:
 		dw	0
+
+
+kempston_enable:
+		db	0
 
 ; + распакованные данные о прохождении уровней.
 progress:		block	1000	; 1000 байт на 100 уровней. Каждый байт != 0 означает что уровень был пройден.

@@ -19,4 +19,5 @@ loop:
 	push	bc
 	push	hl
 	call	INPUT.keyListener
+	call	INPUT.kempston_joy
 	ret

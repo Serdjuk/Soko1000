@@ -52,7 +52,12 @@ init:
 
 	; press enter = start game
 	call	INPUT.pressed_enter
+	jr	z,.start_game
+
+	call	INPUT.fire
 	jr	nz,.end
+
+.start_game:
 	call	get_address_of_level_indices_of_each_world
 	ld	a,(hl)
 	ld	(DATA.level_index),a

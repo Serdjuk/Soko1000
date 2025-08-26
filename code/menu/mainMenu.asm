@@ -96,6 +96,10 @@ input:
 	ld	c,ENTER
 	call	INPUT.pressed_key
 	jr	z,.select
+
+	call	INPUT.fire
+	jr	z,.select
+
 	ld	c,SPACE
 	call	INPUT.pressed_key
 	ret	nz
@@ -212,22 +216,54 @@ redraw:
 	cp	MAIN_MENU_ITEMS_COUNT
 	ret	z
 	jr	.loop
+control_bit:
+	db	1
 
 keyboard:
-	ld	ix,TEXT.text_keyboard_qaop
-	ld	hl,VAR.qaop_keys
-	ld	de,VAR.key_binding
-	ld	a,(de)
-	cp	'Q'
-	jr	nz,.rebind_keys
-	ld	hl,VAR.wasd_keys
-	ld	ix,TEXT.text_keyboard_wasd
-.rebind_keys:
-	ld	bc,4
+	; rotate bit
+	ld	a,(control_bit)
+	rlca
+	and	7
+	jr	nz,.not_zero
+	inc	a
+.not_zero:
+	ld	(control_bit),a
+	; check bit
+	rrca
+	jr	c,.qaop
+	rrca
+	jr	c,.wasd
+	rrca
+	ret	nc
+.kempston:
+	ld	hl,VAR.interfaceII
+	call	.rebind
+	ld	hl,TEXT.text_joystick
+	ld	de,TEXT.text_keyboard
+	ld	bc,13
 	ldir
-	push	ix
-	pop	hl
+	ret
+.qaop:
+	xor	a
+	ld	hl,VAR.qaop_keys
+	call	.rebind
+	ld	hl,TEXT.text_keyboard_clone
+	ld	de,TEXT.text_keyboard
+	ld	bc,13
+	ldir
+	ret
+.wasd:
+	call	.qaop
+	ld	hl,VAR.wasd_keys
+	call	.rebind
+	ld	hl,VAR.wasd_keys
 	ld	de,TEXT.text_keyboard + 9
+	ld	c,4
+	ldir
+	ret
+.rebind:
+	ld	(DATA.kempston_enable),a
+	ld	de,VAR.key_binding
 	ld	bc,4
 	ldir
 	ret

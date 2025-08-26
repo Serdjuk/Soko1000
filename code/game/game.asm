@@ -546,6 +546,10 @@ input:
 
 	call	INPUT.pressed_space
 	jr	z,BOM
+
+	call	INPUT.fire
+	jr	z,BOM
+
 	ld	c,'C'
 	call	INPUT.pressed_key
 	jp	z,change_level_color

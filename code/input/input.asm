@@ -121,4 +121,44 @@ rows:
 	db "POIUY"
 	db "{LKJH"
 	db " `MNB"
+
+
+kempston_joy:
+	ld	a,(DATA.kempston_enable)
+	or	a
+	ret	z
+	ld	hl,DATA.pressed_key
+	in	a,(#1f)
+	bit	1,a
+	jr	nz,.left
+	bit	0,a
+	jr	nz,.right
+	bit	3,a
+	jr	nz,.up
+	bit	2,a
+	jr	nz,.down
+	bit	4,a
+	ret	z
+.fire:
+	ld	(hl),'0'
+	ret
+.left:
+	ld	(hl),'6'
+	ret
+.right:
+	ld	(hl),'7'
+	ret
+.up:
+	ld	(hl),'9'
+	ret
+.down:
+	ld	(hl),'8'
+	ret
+
+; + flasg Z as pressed
+fire:
+	ld	a,(VAR.key_binding + 4)
+	ld	c,a
+	jp	INPUT.pressed_key
+
 	endmodule

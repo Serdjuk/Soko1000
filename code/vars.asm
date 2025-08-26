@@ -5,6 +5,7 @@ key_binding:
 		db	'A'		; down
 		db	'O'		; left
 		db	'P'		; right
+		db	'0'
 
 qaop_keys:	
 		db	'Q'		; up
@@ -16,6 +17,11 @@ wasd_keys:
 		db	'S'		; down
 		db	'A'		; left
 		db	'D'		; right
+interfaceII:
+		db	"9"
+		db	"8"
+		db	"6"
+		db	"7"
 
 ; + Таблица смещения горизонтальных символов экрана кратных 12 пикселям.
 scr_offset_x:	

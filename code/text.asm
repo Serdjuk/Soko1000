@@ -26,10 +26,11 @@ text_no:				db	"No", 0
 
 text_start_game:			db	"Start Game",0
 text_keyboard:				db	"Keyboard QAOP",0
+text_keyboard_clone:			db	"Keyboard QAOP",0
 text_save_progress:			db	"Save Progress", 0
 text_load_progress:			db	"Load Progress", 0
-text_keyboard_qaop:			db	"QAOP",0
 text_keyboard_wasd:			db	"WASD",0
+text_joystick:				db	"Joystick     ",0
 
 text_successfully_saved:		db	"Progress  Saved Successfully", 0
 text_successfully_loaded:		db	"Progress Loaded Successfully", 0
